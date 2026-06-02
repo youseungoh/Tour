@@ -1,0 +1,20 @@
+# misc
+.DS_Store
+Thumbs.db
+*.log
+
+# editor
+.vscode/
+.idea/
+
+# node (사용 시)
+node_modules/
+
+# next.js / typescript 빌드 산출물
+.next/
+next-env.d.ts
+tsconfig.tsbuildinfo
+.env*
+
+# 로컬 설정 (사용 안 함)
+config.js
