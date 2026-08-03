@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TourRo(투어로) — 대한민국 여행 가이드</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    :root{
+      --bg:#fafafa;--surface:#fff;--border:#f0f0f0;--border-md:#e4e4e7;
+      --text:#09090b;--text2:#71717a;--muted:#a1a1aa;
+      --accent:#18181b;--accent-fg:#fff;
+      --green:#16a34a;--green-bg:#f0fdf4;
+      --radius:14px;--radius-lg:20px;
+      --sh-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+      --sh:0 4px 16px rgba(0,0,0,.08);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:-apple-system,'Pretendard','Apple SD Gothic Neo',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;}
+    @keyframes shimmer{to{background-position:-200% 0;}}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+    /* ── 헤더 ── */
+    header{position:sticky;top:0;z-index:300;background:rgba(250,250,250,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;}
+    .hi{width:100%;max-width:1100px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .logo{display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;flex-shrink:0;}
+    .logo-mark{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;}
+    .logo-mark svg{color:#fff;}
+    .logo-name{font-size:15px;font-weight:800;letter-spacing:-.4px;}
+
+    /* 메인 검색창 */
+    .main-search{position:relative;margin-bottom:20px;}
+    .main-search input{width:100%;padding:11px 16px 11px 42px;border:1.5px solid var(--border-md);border-radius:var(--radius);background:var(--surface);font-size:14px;color:var(--text);outline:none;box-shadow:var(--sh-sm);transition:.18s;}
+    .main-search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(24,24,27,.07);}
+    .main-search .msi{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+    .main-search input::placeholder{color:var(--muted);}
+
+    /* 검색 드롭다운 */
+    .search-drop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border-md);border-radius:var(--radius);box-shadow:var(--sh);max-height:320px;overflow-y:auto;z-index:400;animation:fadeIn .12s ease;}
+    .sdrop-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:.12s;border-bottom:1px solid var(--border);}
+    .sdrop-item:last-child{border-bottom:none;}
+    .sdrop-item:hover{background:var(--bg);}
+    .sdrop-thumb{width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#e4e4e7;}
+    .sdrop-name{font-size:13px;font-weight:600;}
+    .sdrop-prov{font-size:11px;color:var(--muted);}
+    .sdrop-empty{padding:20px;text-align:center;font-size:13px;color:var(--muted);}
+
+    /* ── 레이아웃 ── */
+    .page{display:none;}.page.active{display:block;}
+    .wrap{max-width:1100px;margin:0 auto;padding:0 20px;}
+
+    /* ── 홈 히어로 ── */
+    .hero{padding:48px 0 28px;text-align:center;}
+    .eyebrow{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--green);background:var(--green-bg);padding:4px 11px;border-radius:999px;margin-bottom:14px;}
+    .hero h1{font-size:clamp(26px,4.5vw,44px);font-weight:800;letter-spacing:-1.2px;line-height:1.14;margin-bottom:10px;}
+    .hero h1 em{color:var(--muted);font-style:normal;}
+    .hero-sub{font-size:14px;color:var(--text2);max-width:380px;margin:0 auto 24px;line-height:1.7;}
+
+    /* ── 17 시도 그리드 ── */
+    .sido-section{margin-bottom:56px;}
+    .sec-title{font-size:14px;font-weight:700;color:var(--text2);letter-spacing:.2px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+    .sido-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+    .sido-card{position:relative;overflow:hidden;border-radius:14px;cursor:pointer;aspect-ratio:4/3;background:#e4e4e7;box-shadow:var(--sh-sm);transition:transform .22s,box-shadow .22s;}
+    .sido-card:hover{transform:translateY(-2px) scale(1.02);box-shadow:var(--sh);}
+    .sido-card img{width:100%;height:100%;object-fit:cover;transition:transform .4s;}
+    .sido-card:hover img{transform:scale(1.08);}
+    .sido-ov{position:absolute;inset:0;background:linear-gradient(170deg,transparent 20%,rgba(0,0,0,.72) 100%);}
+    .sido-bd{position:absolute;bottom:0;left:0;right:0;padding:9px 10px;}
+    .sido-emoji{font-size:13px;display:block;margin-bottom:1px;}
+    .sido-name{font-size:13px;font-weight:700;color:#fff;display:block;letter-spacing:-.2px;}
+    .sido-desc{font-size:9px;color:rgba(255,255,255,.6);display:block;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    /* ── 시도 상세 페이지 ── */
+    .dh{position:relative;height:200px;border-radius:var(--radius-lg);overflow:hidden;margin:20px 0 22px;box-shadow:var(--sh);}
+    .dh img{width:100%;height:100%;object-fit:cover;}
+    .dh-ov{position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.65) 0%,rgba(0,0,0,.1) 65%);}
+    .dh-ct{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:20px 24px;}
+    .back-btn{position:absolute;top:14px;left:16px;display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.3);color:rgba(255,255,255,.9);backdrop-filter:blur(6px);border:none;cursor:pointer;font-size:12px;font-weight:500;padding:5px 11px;border-radius:999px;transition:.15s;}
+    .back-btn:hover{background:rgba(0,0,0,.5);}
+    .dh-emoji{font-size:22px;margin-bottom:4px;}
+    .dh-name{font-size:24px;font-weight:800;color:#fff;letter-spacing:-.4px;}
+    .dh-desc{font-size:12px;color:rgba(255,255,255,.65);margin-top:2px;}
+
+    /* 시군구 선택바 */
+    .city-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:18px;scrollbar-width:none;}
+    .city-bar::-webkit-scrollbar{display:none;}
+    .cbar-btn{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;border:1.5px solid var(--border-md);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--text2);transition:.15s;}
+    .cbar-btn:hover{border-color:var(--accent);color:var(--text);}
+    .cbar-btn.active{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);}
+
+    /* 카테고리 탭 */
+    .tab-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:20px;scrollbar-width:none;}
+    .tab-bar::-webkit-scrollbar{display:none;}
+    .tab-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;border:1.5px solid var(--border-md);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--text2);transition:.15s;}
+    .tab-btn:hover:not(.active){border-color:var(--text);color:var(--text);}
+    .tab-btn.active{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);}
+
+    /* 스팟 그리드 */
+    .spot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:13px;margin-bottom:60px;}
+    .spot-card{background:var(--surface);border-radius:var(--radius);overflow:hidden;cursor:pointer;border:1px solid var(--border);transition:transform .18s,box-shadow .18s,border-color .18s;}
+    .spot-card:hover{transform:translateY(-2px);box-shadow:var(--sh);border-color:var(--border-md);}
+    .simg{position:relative;height:148px;overflow:hidden;background:#f4f4f5;display:flex;align-items:center;justify-content:center;color:var(--muted);}
+    .simg img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+    .spot-card:hover .simg img{transform:scale(1.05);}
+    .sbadge{position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;padding:3px 7px;border-radius:999px;}
+    .bg{background:rgba(22,163,74,.88);color:#fff;}
+    .bo{background:rgba(234,88,12,.88);color:#fff;}
+    .bp{background:rgba(124,58,237,.88);color:#fff;}
+    .bpk{background:rgba(219,39,119,.88);color:#fff;}
+    .bb{background:rgba(37,99,235,.88);color:#fff;}
+    .btr{background:rgba(101,65,27,.88);color:#fff;}
+    .sbody{padding:11px 12px;}
+    .stitle{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .smeta{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .smeta+.smeta{margin-top:2px;}
+
+    /* 스켈레톤 */
+    .skel{background:linear-gradient(90deg,#f4f4f5 25%,#e4e4e7 50%,#f4f4f5 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;}
+    .sk-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+    .sk-img{height:148px;}
+    .sk-body{padding:11px 12px;}
+    .sk-line{height:12px;border-radius:5px;margin-bottom:6px;}
+    .sk-line.w6{width:60%;}.sk-line.w4{width:40%;}
+
+    /* 장소 상세 */
+    .det-wrap{max-width:680px;padding:24px 0 80px;}
+    .det-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;padding:0;margin-bottom:16px;transition:.15s;}
+    .det-back:hover{color:var(--text);}
+    .det-hero{width:100%;height:260px;object-fit:cover;border-radius:var(--radius-lg);margin-bottom:20px;box-shadow:var(--sh);}
+    .det-title{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px;}
+    .det-meta-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:22px;}
+    .det-meta{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text2);}
+    .det-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px;}
+    .det-card h3{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);margin-bottom:9px;display:flex;align-items:center;gap:5px;}
+    .det-ov{font-size:14px;color:#3f3f46;line-height:1.85;}
+    .kakao-btn{display:inline-flex;align-items:center;gap:6px;background:#FEE500;color:#191919;padding:9px 16px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:700;margin-top:10px;text-decoration:none;transition:.15s;}
+    .kakao-btn:hover{background:#F5DC00;}
+
+    /* 빈 상태 */
+    .empty{grid-column:1/-1;text-align:center;padding:64px 20px;color:var(--muted);}
+    .empty-ico{display:flex;justify-content:center;margin-bottom:10px;color:var(--border-md);}
+    .empty p{font-size:14px;color:var(--text2);margin-bottom:3px;}
+    .empty small{font-size:12px;}
+
+    .stat{font-size:12px;color:var(--muted);margin-bottom:14px;}
+
+    /* 헤더 저작자 */
+    .hdr-copy{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+
+    /* 푸터 */
+    footer{border-top:1px solid var(--border);padding:12px 20px;text-align:center;font-size:12px;color:var(--muted);line-height:1.4;}
+    footer a{color:var(--muted);text-decoration:none;}
+    footer a:hover{color:var(--text);}
+
+    @media(max-width:640px){
+      header{height:auto;min-height:48px;padding:8px 0;}
+      .hi{padding:0 14px;gap:8px;}
+      .logo-sub{display:none;}
+      .hdr-copy{display:flex;flex-direction:column;align-items:flex-end;gap:1px;font-size:9px;}
+      .hdr-copy>span{white-space:nowrap;}
+
+      .hero{padding:24px 0 16px;}
+      .hero h1{font-size:22px;}
+      .eyebrow{font-size:10px;}
+      .hero-sub{font-size:13px;}
+
+      .sido-grid{grid-template-columns:repeat(3,1fr);gap:7px;}
+      .sido-name{font-size:12px;}
+      .sido-desc{font-size:8px;}
+
+      .spot-grid{grid-template-columns:repeat(2,1fr);gap:9px;}
+      .simg{height:120px;}
+      .stitle{font-size:12px;}
+
+      .dh{height:160px;margin:12px 0 16px;}
+      .dh-name{font-size:20px;}
+
+      .det-hero{height:200px;}
+      .det-title{font-size:18px;}
+
+      .wrap{padding:0 12px;}
+      .city-bar{gap:5px;}
+      .tab-bar{gap:5px;}
+      .cbar-btn,.tab-btn{padding:5px 10px;font-size:11px;}
+    }
+    @media(max-width:380px){
+      .sido-grid{grid-template-columns:repeat(2,1fr);}
+      .logo-name{font-size:13px;}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="hi">
+    <a class="logo" onclick="showPage('home')">
+      <div class="logo-mark"><i data-lucide="map-pin" style="width:14px;height:14px;"></i></div>
+      <span class="logo-name">TourRo(투어로)</span>
+      <span class="logo-sub" style="margin-left:8px;color:var(--text2);font-size:14px;font-weight:400;line-height:1.7;">관광지 | 맛집 | 둘레길 | 축제 | 숙박 등</span>
+    </a>
+    <span class="hdr-copy" style="display:flex;flex-direction:column;align-items:flex-end;gap:0px;line-height:1.3;">
+      <span><i data-lucide="copyright" style="width:10px;height:10px;"></i>Produced by You Seungoh</span>
+      <a href="https://youtube.com/@pianocanvas" target="_blank" rel="noopener" style="font-size:11px;color:var(--text2);text-decoration:none;display:flex;align-items:center;gap:3px;"><i data-lucide="youtube" style="width:11px;height:11px;"></i>youtube.com/@pianocanvas | cafe music</a>
+    </span>
+  </div>
+</header>
+
+
+
+<!-- 홈 -->
+<div id="page-home" class="page active">
+  <div class="wrap">
+    <div class="hero">
+      <div class="eyebrow"><i data-lucide="sparkles" style="width:10px;height:10px;"></i> 현지인 큐레이션</div>
+      <h1>어디로 떠날까요?<br><em>대한민국 구석구석</em></h1>
+      <p class="hero-sub">17개 시도를 선택하거나 검색창으로 시군구를 찾아보세요.</p>
+    </div>
+
+    <div class="sido-section">
+      <div class="main-search">
+        <i data-lucide="search" class="msi" style="width:15px;height:15px;"></i>
+        <input type="text" id="hdr-input" placeholder="시군구 이름으로 검색..."
+          oninput="onHdrInput(this.value)"
+          onfocus="onHdrFocus()"
+          onblur="setTimeout(closeSearch,250)"
+          onkeydown="onHdrKey(event)"/>
+        <div id="search-drop" class="search-drop" style="display:none;"></div>
+      </div>
+      <div class="sec-title">
+        <i data-lucide="map" style="width:13px;height:13px;"></i> 시도 선택
+      </div>
+      <div class="sido-grid" id="sido-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 시도/시군구 상세 -->
+<div id="page-region" class="page">
+  <div class="wrap">
+    <div class="dh">
+      <img id="rh-img" src="" alt=""/>
+      <div class="dh-ov"></div>
+      <div class="dh-ct">
+        <button class="back-btn" onclick="showPage('home')">
+          <i data-lucide="arrow-left" style="width:11px;height:11px;"></i> 목록
+        </button>
+        <div class="dh-emoji" id="rh-emoji"></div>
+        <div class="dh-name" id="rh-name"></div>
+        <div class="dh-desc" id="rh-desc"></div>
+      </div>
+    </div>
+    <div class="city-bar" id="city-bar"></div>
+    <div class="tab-bar" id="tab-bar"></div>
+    <div class="stat" id="stat"></div>
+    <div class="spot-grid" id="spot-grid"></div>
+  </div>
+</div>
+
+<!-- 장소 상세 -->
+<div id="page-detail" class="page">
+  <div class="wrap">
+    <div class="det-wrap">
+      <button class="det-back" onclick="showPage('region')">
+        <i data-lucide="arrow-left" style="width:13px;height:13px;"></i> 목록으로
+      </button>
+      <div id="det-ct"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  TourRo(투어로) · 대한민국 전국 여행 가이드 · 데이터: 한국관광공사 TourAPI 4.0<br>
+  ©Produced by You Seungoh. yso21@naver.com<br>
+  <a href="https://youtube.com/@pianocanvas" target="_blank" rel="noopener"><i data-lucide="youtube" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i>https://youtube.com/@pianocanvas</a> | Healing Pop Music
+</footer>
+
+<script>
+// ══════════════════════════════════════════════
+// API 키 및 CORS 설정
+// ══════════════════════════════════════════════
+const API_KEY = 'C3Wdyqg5b%2FS%2BFO%2BvHYyBDiuKNrZYpBpkYcpeUYT590DRUeuY2yU2m%2B2P9csYo5tHMeuvWOXMJuTF9fCHNPFfSg%3D%3D';
+const BASE = 'https://apis.data.go.kr/B551011/KorService2';
+
+function getApiKey(){ return API_KEY; }
+function checkKeyBanner(){}
+
+// 세션 캐시 (같은 요청 재사용) + 최적 채널 학습
+const _apiCache = new Map();
+let _bestChannel = null;  // 최근에 성공한 채널 index를 기억
+
+function _channels(url){
+  const urlV1 = url.replace('/KorService2/', '/KorService1/')
+                   .replace('areaBasedList2', 'areaBasedList1')
+                   .replace('searchKeyword2', 'searchKeyword1')
+                   .replace('searchFestival2', 'searchFestival1')
+                   .replace('detailCommon2', 'detailCommon1')
+                   .replace('areaCode2', 'areaCode1');
+  return [
+    url,
+    'https://corsproxy.io/?' + encodeURIComponent(url),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+    urlV1,
+    'https://corsproxy.io/?' + encodeURIComponent(urlV1),
+  ];
+}
+
+async function _try(tu){
+  const r = await fetch(tu);
+  const t = await r.text();
+  if(!t || !t.trim()) throw new Error('빈 응답');
+  if(t.trim().startsWith('<')){
+    const m = t.match(/<errMsg>(.*?)<\/errMsg>/);
+    throw new Error(m ? m[1] : 'HTML 응답');
+  }
+  const d = JSON.parse(t);
+  if(!d?.response?.header && !d?.response?.body) throw new Error('TourAPI 응답 아님');
+  return t;
+}
+
+async function apiFetch(url){
+  if(_apiCache.has(url)) return _apiCache.get(url);
+  const chans = _channels(url);
+  let text = null;
+
+  // 1단계: 학습된 최적 채널이 있으면 먼저 단독 시도 (매우 빠름)
+  if(_bestChannel != null && chans[_bestChannel]){
+    try { text = await _try(chans[_bestChannel]); }
+    catch(e){ _bestChannel = null; }
+  }
+
+  // 2단계: Promise.any로 모든 채널 병렬 경쟁 — 가장 빠른 성공 채택
+  if(!text){
+    const attempts = chans.map((c,i) => _try(c).then(t => ({t, i})));
+    try {
+      const winner = await Promise.any(attempts);
+      _bestChannel = winner.i;
+      text = winner.t;
+    } catch(agg){
+      const first = agg.errors?.[0];
+      throw new Error('데이터 로드 실패: ' + (first?.message || 'unknown'));
+    }
+  }
+
+  _apiCache.set(url, text);
+  const data = JSON.parse(text);
+  const hdr = data?.response?.header;
+  if(hdr?.resultCode && hdr.resultCode !== '0000'){
+    throw new Error('API 오류 [' + hdr.resultCode + ']: ' + hdr.resultMsg);
+  }
+
+  return text;
+}
+
+// ══════════════════════════════════════════════
+// 17 시도 (메인 화면)
+// ══════════════════════════════════════════════
+const SIDOS = [
+  {id:'seoul',   area:'1',  name:'서울',  emoji:'🏙️', desc:'경복궁·한강·남산',
+   img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=500&q=80'},
+  {id:'incheon', area:'2',  name:'인천',  emoji:'✈️', desc:'인천공항·송도·강화',
+   img:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500&q=80'},
+  {id:'daejeon', area:'3',  name:'대전',  emoji:'🔬', desc:'엑스포·한밭수목원',
+   img:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=500&q=80'},
+  {id:'daegu',   area:'4',  name:'대구',  emoji:'🌹', desc:'동성로·서문시장',
+   img:'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=500&q=80'},
+  {id:'gwangju', area:'5',  name:'광주',  emoji:'🎨', desc:'무등산·국립아시아문화전당',
+   img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=500&q=80'},
+  {id:'busan',   area:'6',  name:'부산',  emoji:'🌊', desc:'해운대·광안리·자갈치',
+   img:'https://images.unsplash.com/photo-1598935898639-81586f7d2129?w=500&q=80'},
+  {id:'ulsan',   area:'7',  name:'울산',  emoji:'🐳', desc:'대왕암·고래생태공원',
+   img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=80'},
+  {id:'sejong',  area:'8',  name:'세종',  emoji:'🏛️', desc:'세종호수공원·정부청사',
+   img:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=500&q=80'},
+  {id:'gyeonggi',area:'31', name:'경기',  emoji:'🏯', desc:'수원화성·남이섬·에버랜드',
+   img:'https://images.unsplash.com/photo-1546268060-2592ff93ee24?w=500&q=80'},
+  {id:'gangwon', area:'32', name:'강원',  emoji:'⛷️', desc:'설악산·경포대·정동진',
+   img:'https://images.unsplash.com/photo-1609873814058-a8928924184a?w=500&q=80'},
+  {id:'chungbuk',area:'33', name:'충북',  emoji:'🪨', desc:'단양팔경·속리산·청풍호',
+   img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80'},
+  {id:'chungnam',area:'34', name:'충남',  emoji:'🏰', desc:'공주공산성·부여궁남지',
+   img:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=500&q=80'},
+  {id:'jeonbuk', area:'37', name:'전북',  emoji:'🍚', desc:'전주한옥마을·변산반도',
+   img:'https://images.unsplash.com/photo-1601887389937-0b02c26b602c?w=500&q=80'},
+  {id:'jeonnam', area:'38', name:'전남',  emoji:'🎇', desc:'여수밤바다·순천만습지',
+   img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=80'},
+  {id:'gyeongbuk',area:'35',name:'경북',  emoji:'🏛️', desc:'경주불국사·안동하회마을',
+   img:'https://images.unsplash.com/photo-1546268060-2592ff93ee24?w=500&q=80'},
+  {id:'gyeongnam',area:'36',name:'경남',  emoji:'🎵', desc:'통영한려수도·거제외도',
+   img:'https://images.unsplash.com/photo-1570789210967-2cac24afeb00?w=500&q=80'},
+  {id:'jeju',    area:'39', name:'제주',  emoji:'🌺', desc:'한라산·성산일출봉·올레길',
+   img:'https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=500&q=80'},
+];
+
+// ══════════════════════════════════════════════
+// 전국 시군구 + 특별·광역시 구/군 (검색 + 시도 하단 탭용)
+// ══════════════════════════════════════════════
+const CITIES = [
+  // ── 서울 구 (TourAPI 가나다순) ──
+  {id:'gangnam',  area:'1', si:'1', prov:'서울', name:'강남구',   emoji:'💎', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'gangdong', area:'1', si:'2', prov:'서울', name:'강동구',   emoji:'🌊', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'gangbuk',  area:'1', si:'3', prov:'서울', name:'강북구',   emoji:'⛰️', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'gangseo',  area:'1', si:'4', prov:'서울', name:'강서구',   emoji:'✈️', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'gwanak',   area:'1', si:'5', prov:'서울', name:'관악구',   emoji:'🎓', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'gwangjin', area:'1', si:'6', prov:'서울', name:'광진구',   emoji:'🏞️', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'guro',     area:'1', si:'7', prov:'서울', name:'구로구',   emoji:'🏭', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'geumcheon',area:'1', si:'8', prov:'서울', name:'금천구',   emoji:'💼', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'nowon',    area:'1', si:'9', prov:'서울', name:'노원구',   emoji:'🚇', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'dobong',   area:'1', si:'10',prov:'서울', name:'도봉구',   emoji:'🌲', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'dongdaemun',area:'1',si:'11',prov:'서울', name:'동대문구', emoji:'🧵', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'dongjak',  area:'1', si:'12',prov:'서울', name:'동작구',   emoji:'🎭', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'mapo',     area:'1', si:'13',prov:'서울', name:'마포구',   emoji:'🍺', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'seodaemun',area:'1', si:'14',prov:'서울', name:'서대문구', emoji:'🎓', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'seocho',   area:'1', si:'15',prov:'서울', name:'서초구',   emoji:'⚖️', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'seongdong',area:'1', si:'16',prov:'서울', name:'성동구',   emoji:'🌉', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'seongbuk', area:'1', si:'17',prov:'서울', name:'성북구',   emoji:'🏛️', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'songpa',   area:'1', si:'18',prov:'서울', name:'송파구',   emoji:'🏟️', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'yangcheon',area:'1', si:'19',prov:'서울', name:'양천구',   emoji:'🌿', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'yeongdeungpo',area:'1',si:'20',prov:'서울',name:'영등포구',emoji:'🌃', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'yongsan',  area:'1', si:'21',prov:'서울', name:'용산구',   emoji:'🗼', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'eunpyeong',area:'1', si:'22',prov:'서울', name:'은평구',   emoji:'🏘️', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'jongno',   area:'1', si:'23',prov:'서울', name:'종로구',   emoji:'🏯', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'s_jung',   area:'1', si:'24',prov:'서울', name:'중구',     emoji:'🏙️', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  {id:'jungnang', area:'1', si:'25',prov:'서울', name:'중랑구',   emoji:'🌳', img:'https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=400&q=70'},
+  // ── 인천 구/군 (TourAPI 가나다순) ──
+  {id:'ganghwa',  area:'2', si:'1', prov:'인천', name:'강화군',   emoji:'🏯', img:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=70'},
+  {id:'gyeyang',  area:'2', si:'2', prov:'인천', name:'계양구',   emoji:'🌿', img:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=70'},
+  {id:'namdong',  area:'2', si:'3', prov:'인천', name:'남동구',   emoji:'🏙️', img:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=70'},
+  {id:'ic_dong',  area:'2', si:'4', prov:'인천', name:'동구',     emoji:'🏭', img:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=70'},
+  {id:'michuhol', area:'2', si:'5', prov:'인천', name:'미추홀구', emoji:'🏘️', img:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=70'},
+  {id:'bupyeong', area:'2', si:'6', prov:'인천', name:'부평구',   emoji:'🛍️', img:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=70'},
+  {id:'ic_seo',   area:'2', si:'7', prov:'인천', name:'서구',     emoji:'🏗️', img:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=70'},
+  {id:'yeonsu',   area:'2', si:'8', prov:'인천', name:'연수구',   emoji:'🌆', img:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=70'},
+  {id:'ongjin',   area:'2', si:'9', prov:'인천', name:'옹진군',   emoji:'🏝️', img:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=70'},
+  {id:'ic_jung',  area:'2', si:'10',prov:'인천', name:'중구',     emoji:'✈️', img:'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=70'},
+  // ── 대전 구 (TourAPI 가나다순) ──
+  {id:'daedeok',  area:'3', si:'1', prov:'대전', name:'대덕구',   emoji:'⚗️', img:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400&q=70'},
+  {id:'dj_dong',  area:'3', si:'2', prov:'대전', name:'동구',     emoji:'🌄', img:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400&q=70'},
+  {id:'dj_seo',   area:'3', si:'3', prov:'대전', name:'서구',     emoji:'🛍️', img:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400&q=70'},
+  {id:'yuseong',  area:'3', si:'4', prov:'대전', name:'유성구',   emoji:'🔬', img:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400&q=70'},
+  {id:'dj_jung',  area:'3', si:'5', prov:'대전', name:'중구',     emoji:'🏙️', img:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400&q=70'},
+  // ── 대구 구/군 (TourAPI 가나다순) ──
+  {id:'gunwi',    area:'4', si:'1', prov:'대구', name:'군위군',   emoji:'🏔️', img:'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=400&q=70'},
+  {id:'dg_nam',   area:'4', si:'2', prov:'대구', name:'남구',     emoji:'🌸', img:'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=400&q=70'},
+  {id:'dalseo',   area:'4', si:'3', prov:'대구', name:'달서구',   emoji:'🌆', img:'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=400&q=70'},
+  {id:'dalseong', area:'4', si:'4', prov:'대구', name:'달성군',   emoji:'🏞️', img:'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=400&q=70'},
+  {id:'dg_dong',  area:'4', si:'5', prov:'대구', name:'동구',     emoji:'🏔️', img:'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=400&q=70'},
+  {id:'dg_buk',   area:'4', si:'6', prov:'대구', name:'북구',     emoji:'🏘️', img:'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=400&q=70'},
+  {id:'dg_seo',   area:'4', si:'7', prov:'대구', name:'서구',     emoji:'🏭', img:'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=400&q=70'},
+  {id:'suseong',  area:'4', si:'8', prov:'대구', name:'수성구',   emoji:'🏊', img:'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=400&q=70'},
+  {id:'dg_jung',  area:'4', si:'9', prov:'대구', name:'중구',     emoji:'🌹', img:'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=400&q=70'},
+  // ── 광주 구 (TourAPI 가나다순) ──
+  {id:'gwangsan', area:'5', si:'1', prov:'광주', name:'광산구',   emoji:'✈️', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'gj_nam',   area:'5', si:'2', prov:'광주', name:'남구',     emoji:'🌿', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'gj_dong',  area:'5', si:'3', prov:'광주', name:'동구',     emoji:'🎨', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'gj_buk',   area:'5', si:'4', prov:'광주', name:'북구',     emoji:'⛰️', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'gj_seo',   area:'5', si:'5', prov:'광주', name:'서구',     emoji:'🌇', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  // ── 부산 구/군 (TourAPI 가나다순 확인됨) ──
+  {id:'bs_gangseo',area:'6',si:'1', prov:'부산', name:'강서구',   emoji:'✈️', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'geumjeong',area:'6', si:'2', prov:'부산', name:'금정구',   emoji:'⛰️', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'gijang',   area:'6', si:'3', prov:'부산', name:'기장군',   emoji:'🦀', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'bs_nam',   area:'6', si:'4', prov:'부산', name:'남구',     emoji:'🏛️', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'bs_dong',  area:'6', si:'5', prov:'부산', name:'동구',     emoji:'🚢', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'dongnae',  area:'6', si:'6', prov:'부산', name:'동래구',   emoji:'♨️', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'busanjin', area:'6', si:'7', prov:'부산', name:'부산진구', emoji:'🛍️', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'bs_buk',   area:'6', si:'8', prov:'부산', name:'북구',     emoji:'🌿', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'sasang',   area:'6', si:'9', prov:'부산', name:'사상구',   emoji:'🏭', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'saha',     area:'6', si:'10',prov:'부산', name:'사하구',   emoji:'🌅', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'bs_seo',   area:'6', si:'11',prov:'부산', name:'서구',     emoji:'🌊', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'suyeong',  area:'6', si:'12',prov:'부산', name:'수영구',   emoji:'🏊', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'yeonje',   area:'6', si:'13',prov:'부산', name:'연제구',   emoji:'🏢', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'yeongdo',  area:'6', si:'14',prov:'부산', name:'영도구',   emoji:'⚓', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'bs_jung',  area:'6', si:'15',prov:'부산', name:'중구',     emoji:'🏙️', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  {id:'haeundae', area:'6', si:'16',prov:'부산', name:'해운대구', emoji:'🏖️', img:'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=400&q=70'},
+  // ── 울산 구/군 (TourAPI 가나다순) ──
+  {id:'ul_nam',   area:'7', si:'1', prov:'울산', name:'남구',     emoji:'🐳', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'ul_dong',  area:'7', si:'2', prov:'울산', name:'동구',     emoji:'🔱', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'ul_buk',   area:'7', si:'3', prov:'울산', name:'북구',     emoji:'🏭', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'ulju',     area:'7', si:'4', prov:'울산', name:'울주군',   emoji:'🌿', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'ul_jung',  area:'7', si:'5', prov:'울산', name:'중구',     emoji:'🏙️', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  // ── 경기 (TourAPI 가나다순) ──
+  {id:'gapyeong',    area:'31',si:'1', prov:'경기', name:'가평',    emoji:'🌲', img:'https://images.unsplash.com/photo-1609873814058-a8928924184a?w=400&q=70'},
+  {id:'goyang',      area:'31',si:'2', prov:'경기', name:'고양',    emoji:'🌸', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'gwacheon',    area:'31',si:'3', prov:'경기', name:'과천',    emoji:'🦁', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'gwangmyeong', area:'31',si:'4', prov:'경기', name:'광명',    emoji:'💡', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'gwangju_gg',  area:'31',si:'5', prov:'경기', name:'광주',    emoji:'🏔️', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'guri',        area:'31',si:'6', prov:'경기', name:'구리',    emoji:'🍑', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'gunpo',       area:'31',si:'7', prov:'경기', name:'군포',    emoji:'🚂', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'gimpo',       area:'31',si:'8', prov:'경기', name:'김포',    emoji:'🌾', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'namyangju',   area:'31',si:'9', prov:'경기', name:'남양주',  emoji:'🌿', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'dongducheon', area:'31',si:'10',prov:'경기', name:'동두천',  emoji:'🌲', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'bucheon',     area:'31',si:'11',prov:'경기', name:'부천',    emoji:'🎬', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'seongnam',    area:'31',si:'12',prov:'경기', name:'성남',    emoji:'🏢', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'suwon',       area:'31',si:'13',prov:'경기', name:'수원',    emoji:'🏯', img:'https://images.unsplash.com/photo-1546268060-2592ff93ee24?w=400&q=70'},
+  {id:'siheung',     area:'31',si:'14',prov:'경기', name:'시흥',    emoji:'🦅', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'ansan',       area:'31',si:'15',prov:'경기', name:'안산',    emoji:'🌊', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'anseong',     area:'31',si:'16',prov:'경기', name:'안성',    emoji:'🎪', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'anyang',      area:'31',si:'17',prov:'경기', name:'안양',    emoji:'🌳', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'yangju',      area:'31',si:'18',prov:'경기', name:'양주',    emoji:'🌺', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'yangpyeong',  area:'31',si:'19',prov:'경기', name:'양평',    emoji:'🌿', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'yeoju',       area:'31',si:'20',prov:'경기', name:'여주',    emoji:'🍈', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'yeoncheon',   area:'31',si:'21',prov:'경기', name:'연천',    emoji:'🦕', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  {id:'osan',        area:'31',si:'22',prov:'경기', name:'오산',    emoji:'🏺', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'yongin',      area:'31',si:'23',prov:'경기', name:'용인',    emoji:'🎢', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'uiwang',      area:'31',si:'24',prov:'경기', name:'의왕',    emoji:'🚃', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'uijeongbu',   area:'31',si:'25',prov:'경기', name:'의정부',  emoji:'🍖', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'icheon',      area:'31',si:'26',prov:'경기', name:'이천',    emoji:'🍚', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'paju',        area:'31',si:'27',prov:'경기', name:'파주',    emoji:'📚', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'pyeongtaek',  area:'31',si:'28',prov:'경기', name:'평택',    emoji:'🌾', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'pocheon',     area:'31',si:'29',prov:'경기', name:'포천',    emoji:'🌸', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'hanam',       area:'31',si:'30',prov:'경기', name:'하남',    emoji:'🌅', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'hwaseong',    area:'31',si:'31',prov:'경기', name:'화성',    emoji:'🚀', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  // ── 강원 (TourAPI 가나다순) ──
+  {id:'gangneung',   area:'32',si:'1', prov:'강원', name:'강릉',    emoji:'☕', img:'https://images.unsplash.com/photo-1498503182468-3b51cbb6cb24?w=400&q=70'},
+  {id:'goseong_gw',  area:'32',si:'2', prov:'강원', name:'고성',    emoji:'🏖️', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'donghae',     area:'32',si:'3', prov:'강원', name:'동해',    emoji:'🌊', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'samcheok',    area:'32',si:'4', prov:'강원', name:'삼척',    emoji:'🌊', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'sokcho',      area:'32',si:'5', prov:'강원', name:'속초',    emoji:'🦐', img:'https://images.unsplash.com/photo-1609873814058-a8928924184a?w=400&q=70'},
+  {id:'yanggu',      area:'32',si:'6', prov:'강원', name:'양구',    emoji:'🌿', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'yangyang',    area:'32',si:'7', prov:'강원', name:'양양',    emoji:'🏄', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'yeongwol',    area:'32',si:'8', prov:'강원', name:'영월',    emoji:'🌌', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  {id:'wonju',       area:'32',si:'9', prov:'강원', name:'원주',    emoji:'🎭', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'inje',        area:'32',si:'10',prov:'강원', name:'인제',    emoji:'🦌', img:'https://images.unsplash.com/photo-1609873814058-a8928924184a?w=400&q=70'},
+  {id:'jeongseon',   area:'32',si:'11',prov:'강원', name:'정선',    emoji:'🚡', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  {id:'cheorwon',    area:'32',si:'12',prov:'강원', name:'철원',    emoji:'🦢', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'chuncheon',   area:'32',si:'13',prov:'강원', name:'춘천',    emoji:'🍗', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'taebaek',     area:'32',si:'14',prov:'강원', name:'태백',    emoji:'⛰️', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  {id:'pyeongchang', area:'32',si:'15',prov:'강원', name:'평창',    emoji:'⛷️', img:'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&q=70'},
+  {id:'hongcheon',   area:'32',si:'16',prov:'강원', name:'홍천',    emoji:'🌻', img:'https://images.unsplash.com/photo-1609873814058-a8928924184a?w=400&q=70'},
+  {id:'hwacheon',    area:'32',si:'17',prov:'강원', name:'화천',    emoji:'🐟', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'hoengseong',  area:'32',si:'18',prov:'강원', name:'횡성',    emoji:'🥩', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  // ── 충북 (TourAPI 가나다순) ──
+  {id:'goesan',      area:'33',si:'1', prov:'충북', name:'괴산',    emoji:'🏞️', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'danyang',     area:'33',si:'2', prov:'충북', name:'단양',    emoji:'🪨', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  {id:'boeun',       area:'33',si:'3', prov:'충북', name:'보은',    emoji:'🌳', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'yeongdong',   area:'33',si:'4', prov:'충북', name:'영동',    emoji:'🎻', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'okcheon',     area:'33',si:'5', prov:'충북', name:'옥천',    emoji:'🍇', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'eumseong',    area:'33',si:'6', prov:'충북', name:'음성',    emoji:'🌻', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'jecheon',     area:'33',si:'7', prov:'충북', name:'제천',    emoji:'🌅', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'jeungpyeong', area:'33',si:'8', prov:'충북', name:'증평',    emoji:'🏘️', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'jincheon',    area:'33',si:'9', prov:'충북', name:'진천',    emoji:'🌾', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'cheongju',    area:'33',si:'10',prov:'충북', name:'청주',    emoji:'🎶', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'chungju',     area:'33',si:'11',prov:'충북', name:'충주',    emoji:'🍎', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  // ── 충남 (TourAPI 가나다순) ──
+  {id:'gyeryong',    area:'34',si:'1', prov:'충남', name:'계룡',    emoji:'🐉', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  {id:'gongju',      area:'34',si:'2', prov:'충남', name:'공주',    emoji:'🏰', img:'https://images.unsplash.com/photo-1546268060-2592ff93ee24?w=400&q=70'},
+  {id:'geumsan',     area:'34',si:'3', prov:'충남', name:'금산',    emoji:'🌿', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'nonsan',      area:'34',si:'4', prov:'충남', name:'논산',    emoji:'🍓', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'dangjin',     area:'34',si:'5', prov:'충남', name:'당진',    emoji:'🌅', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'boryeong',    area:'34',si:'6', prov:'충남', name:'보령',    emoji:'🌊', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'buyeo',       area:'34',si:'7', prov:'충남', name:'부여',    emoji:'🌸', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'seosan',      area:'34',si:'8', prov:'충남', name:'서산',    emoji:'🦆', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'seocheon',    area:'34',si:'9', prov:'충남', name:'서천',    emoji:'🦜', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'asan',        area:'34',si:'10',prov:'충남', name:'아산',    emoji:'♨️', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'yesan',       area:'34',si:'11',prov:'충남', name:'예산',    emoji:'🍎', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'cheonan',     area:'34',si:'12',prov:'충남', name:'천안',    emoji:'🌰', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'cheongyang',  area:'34',si:'13',prov:'충남', name:'청양',    emoji:'🌶️', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'taean',       area:'34',si:'14',prov:'충남', name:'태안',    emoji:'🌻', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'hongseong',   area:'34',si:'15',prov:'충남', name:'홍성',    emoji:'🥛', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  // 전북
+  {id:'jeonju',      area:'37',si:'12',prov:'전북', name:'전주',    emoji:'🍚', img:'https://images.unsplash.com/photo-1583251633146-d0caf40c3994?w=400&q=70'},
+  {id:'gunsan',      area:'37',si:'2', prov:'전북', name:'군산',    emoji:'🚢', img:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=70'},
+  {id:'iksan',       area:'37',si:'9', prov:'전북', name:'익산',    emoji:'💎', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'jeongeup',    area:'37',si:'13',prov:'전북', name:'정읍',    emoji:'🌙', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'namwon',      area:'37',si:'4', prov:'전북', name:'남원',    emoji:'🎭', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'gimje',       area:'37',si:'3', prov:'전북', name:'김제',    emoji:'🌾', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'wanju',       area:'37',si:'8', prov:'전북', name:'완주',    emoji:'🌾', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'jinan',       area:'37',si:'14',prov:'전북', name:'진안',    emoji:'🌫️', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  {id:'muju',        area:'37',si:'5', prov:'전북', name:'무주',    emoji:'🦋', img:'https://images.unsplash.com/photo-1609873814058-a8928924184a?w=400&q=70'},
+  {id:'jangsu',      area:'37',si:'11',prov:'전북', name:'장수',    emoji:'🍎', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'imsil',       area:'37',si:'10',prov:'전북', name:'임실',    emoji:'🧀', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'sunchang',    area:'37',si:'7', prov:'전북', name:'순창',    emoji:'🌶️', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'gochang',     area:'37',si:'1', prov:'전북', name:'고창',    emoji:'🫐', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'buan',        area:'37',si:'6', prov:'전북', name:'부안',    emoji:'🌊', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  // ── 경북 (TourAPI 가나다순) ──
+  {id:'gyeongsan',   area:'35',si:'1', prov:'경북', name:'경산',    emoji:'🍒', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'gyeongju',    area:'35',si:'2', prov:'경북', name:'경주',    emoji:'🏛️', img:'https://images.unsplash.com/photo-1546268060-2592ff93ee24?w=400&q=70'},
+  {id:'goryeong',    area:'35',si:'3', prov:'경북', name:'고령',    emoji:'🥁', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'gumi',        area:'35',si:'4', prov:'경북', name:'구미',    emoji:'📱', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'gimcheon',    area:'35',si:'5', prov:'경북', name:'김천',    emoji:'🍇', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'mungyeong',   area:'35',si:'6', prov:'경북', name:'문경',    emoji:'🏔️', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  {id:'bonghwa',     area:'35',si:'7', prov:'경북', name:'봉화',    emoji:'🐟', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  {id:'sangju',      area:'35',si:'8', prov:'경북', name:'상주',    emoji:'🚴', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'seongju',     area:'35',si:'9', prov:'경북', name:'성주',    emoji:'🍈', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'andong',      area:'35',si:'10',prov:'경북', name:'안동',    emoji:'🎎', img:'https://images.unsplash.com/photo-1583251633146-d0caf40c3994?w=400&q=70'},
+  {id:'yeongdeok',   area:'35',si:'11',prov:'경북', name:'영덕',    emoji:'🦀', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'yeongyang',   area:'35',si:'12',prov:'경북', name:'영양',    emoji:'🌌', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  {id:'yeongju',     area:'35',si:'13',prov:'경북', name:'영주',    emoji:'🍎', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'yeongcheon',  area:'35',si:'14',prov:'경북', name:'영천',    emoji:'🍷', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'yecheon',     area:'35',si:'15',prov:'경북', name:'예천',    emoji:'🌿', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'ulleung',     area:'35',si:'16',prov:'경북', name:'울릉',    emoji:'🌋', img:'https://images.unsplash.com/photo-1570789210967-2cac24afeb00?w=400&q=70'},
+  {id:'uljin',       area:'35',si:'17',prov:'경북', name:'울진',    emoji:'🦀', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'uiseong',     area:'35',si:'18',prov:'경북', name:'의성',    emoji:'🧅', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'cheongdo',    area:'35',si:'19',prov:'경북', name:'청도',    emoji:'🍷', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'cheongsong',  area:'35',si:'20',prov:'경북', name:'청송',    emoji:'🍎', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  {id:'chilgok',     area:'35',si:'21',prov:'경북', name:'칠곡',    emoji:'🌸', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'pohang',      area:'35',si:'22',prov:'경북', name:'포항',    emoji:'🦞', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  // ── 경남 (TourAPI 가나다순) ──
+  {id:'geoje',       area:'36',si:'1', prov:'경남', name:'거제',    emoji:'🏝️', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'geochang',    area:'36',si:'2', prov:'경남', name:'거창',    emoji:'🍁', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'goseong_gn',  area:'36',si:'3', prov:'경남', name:'고성',    emoji:'🦕', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'gimhae',      area:'36',si:'4', prov:'경남', name:'김해',    emoji:'🍓', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'namhae',      area:'36',si:'5', prov:'경남', name:'남해',    emoji:'🌿', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'miryang',     area:'36',si:'6', prov:'경남', name:'밀양',    emoji:'🌿', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'sacheon',     area:'36',si:'7', prov:'경남', name:'사천',    emoji:'🛩️', img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=70'},
+  {id:'sancheong',   area:'36',si:'8', prov:'경남', name:'산청',    emoji:'🌿', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'yangsan',     area:'36',si:'9', prov:'경남', name:'양산',    emoji:'🏯', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'uiryeong',    area:'36',si:'10',prov:'경남', name:'의령',    emoji:'🌾', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'jinju',       area:'36',si:'11',prov:'경남', name:'진주',    emoji:'🏮', img:'https://images.unsplash.com/photo-1546268060-2592ff93ee24?w=400&q=70'},
+  {id:'changnyeong', area:'36',si:'12',prov:'경남', name:'창녕',    emoji:'🦩', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'changwon',    area:'36',si:'13',prov:'경남', name:'창원',    emoji:'🌊', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'tongyeong',   area:'36',si:'14',prov:'경남', name:'통영',    emoji:'🎵', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'hadong',      area:'36',si:'15',prov:'경남', name:'하동',    emoji:'🍵', img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=70'},
+  {id:'haman',       area:'36',si:'16',prov:'경남', name:'함안',    emoji:'🪷', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'hamyang',     area:'36',si:'17',prov:'경남', name:'함양',    emoji:'🌳', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'hapcheon',    area:'36',si:'18',prov:'경남', name:'합천',    emoji:'🏞️', img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70'},
+  // ── 전남 (TourAPI 가나다순) ──
+  {id:'gangjin',     area:'38',si:'1', prov:'전남', name:'강진',    emoji:'🏺', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'goheung',     area:'38',si:'2', prov:'전남', name:'고흥',    emoji:'🚀', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'gokseong',    area:'38',si:'3', prov:'전남', name:'곡성',    emoji:'🚂', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'gwangyang',   area:'38',si:'4', prov:'전남', name:'광양',    emoji:'🌸', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'gurye',       area:'38',si:'5', prov:'전남', name:'구례',    emoji:'🌸', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'naju',        area:'38',si:'6', prov:'전남', name:'나주',    emoji:'🍐', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'damyang',     area:'38',si:'7', prov:'전남', name:'담양',    emoji:'🎋', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'mokpo',       area:'38',si:'8', prov:'전남', name:'목포',    emoji:'🐙', img:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=70'},
+  {id:'muan',        area:'38',si:'9', prov:'전남', name:'무안',    emoji:'🧅', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'boseong',     area:'38',si:'10',prov:'전남', name:'보성',    emoji:'🍵', img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=70'},
+  {id:'suncheon',    area:'38',si:'11',prov:'전남', name:'순천',    emoji:'🌿', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'sinan',       area:'38',si:'12',prov:'전남', name:'신안',    emoji:'🏝️', img:'https://images.unsplash.com/photo-1570789210967-2cac24afeb00?w=400&q=70'},
+  {id:'yeosu',       area:'38',si:'13',prov:'전남', name:'여수',    emoji:'🎇', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'yeongwang',   area:'38',si:'14',prov:'전남', name:'영광',    emoji:'🐟', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'yeongam',     area:'38',si:'15',prov:'전남', name:'영암',    emoji:'🌾', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'wando',       area:'38',si:'16',prov:'전남', name:'완도',    emoji:'🐚', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'jangseong',   area:'38',si:'17',prov:'전남', name:'장성',    emoji:'🍁', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'jangheung',   area:'38',si:'18',prov:'전남', name:'장흥',    emoji:'🥩', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'jindo',       area:'38',si:'19',prov:'전남', name:'진도',    emoji:'🌊', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'hampyeong',   area:'38',si:'20',prov:'전남', name:'함평',    emoji:'🦋', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  {id:'haenam',      area:'38',si:'21',prov:'전남', name:'해남',    emoji:'🌅', img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=70'},
+  {id:'hwasun',      area:'38',si:'22',prov:'전남', name:'화순',    emoji:'🌿', img:'https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?w=400&q=70'},
+  // ── 제주 (TourAPI 가나다순) ──
+  {id:'jeju_si',     area:'39',si:'1', prov:'제주', name:'제주시',  emoji:'🌺', img:'https://images.unsplash.com/photo-1570789210967-2cac24afeb00?w=400&q=70'},
+  {id:'seogwipo',    area:'39',si:'2', prov:'제주', name:'서귀포',  emoji:'🍊', img:'https://images.unsplash.com/photo-1570789210967-2cac24afeb00?w=400&q=70'},
+];
+
+// 시도별 시군구 매핑
+const SIDO_MAP = {
+  '1':['서울'], '2':['인천'], '3':['대전'], '4':['대구'],
+  '5':['광주'], '6':['부산'], '7':['울산'], '8':['세종'],
+};
+// 도별은 동적으로 CITIES에서 필터링
+
+const TABS = [
+  {id:'',   label:'전체',     icon:'layout-grid',    cls:'bg'},
+  {id:'12', label:'관광지',   icon:'landmark',       cls:'bg'},
+  {id:'39', label:'맛집',     icon:'utensils',       cls:'bo'},
+  {id:'14', label:'문화시설', icon:'building-2',     cls:'bp'},
+  {id:'15', label:'축제/행사',icon:'calendar-heart', cls:'bpk'},
+  {id:'32', label:'숙박',     icon:'bed-double',     cls:'bb'},
+  {id:'28', label:'레포츠',   icon:'bike',           cls:'bg'},
+  {id:'trail', label:'둘레길', icon:'route',         cls:'btr'},
+];
+const TYPE = Object.fromEntries(TABS.map(t=>[t.id,t]));
+
+let curSido = null, curCity = null, curTab = '';
+
+// ── 페이지 전환 ──
+function showPage(n){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+n).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  lucide.createIcons();
+}
+
+// ── 홈: 17 시도 그리드 ──
+function renderSido(){
+  document.getElementById('sido-grid').innerHTML = SIDOS.map(s=>`
+    <div class="sido-card" onclick="openSido('${s.id}')">
+      <img src="${s.img}" alt="${s.name}" loading="lazy" onerror="this.style.display='none'"/>
+      <div class="sido-ov"></div>
+      <div class="sido-bd">
+        <span class="sido-emoji">${s.emoji}</span>
+        <span class="sido-name">${s.name}</span>
+        <span class="sido-desc">${s.desc}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── 시도 열기 ──
+function openSido(sid){
+  curSido = SIDOS.find(s=>s.id===sid);
+  curCity = null; curTab = '';
+
+  document.getElementById('rh-img').src    = curSido.img;
+  document.getElementById('rh-img').alt    = curSido.name;
+  document.getElementById('rh-emoji').textContent = curSido.emoji;
+  document.getElementById('rh-name').textContent  = curSido.name;
+  document.getElementById('rh-desc').textContent  = curSido.desc;
+
+  renderCityBar();
+  renderTabs();
+  showPage('region');
+  loadSpots(curSido.area, '', '', '');
+}
+
+// ── 검색으로 시군구 직접 열기 ──
+function openCity(cid){
+  const city = CITIES.find(c=>c.id===cid);
+  if(!city) return;
+  // 부모 시도 찾기
+  curSido = SIDOS.find(s=>s.area===city.area) || {
+    area:city.area, name:city.prov, emoji:'📍', desc:'', img:city.img
+  };
+  curCity = city; curTab = '';
+
+  document.getElementById('rh-img').src    = city.img;
+  document.getElementById('rh-img').alt    = city.name;
+  document.getElementById('rh-emoji').textContent = city.emoji;
+  document.getElementById('rh-name').textContent  = city.name + ' · ' + city.prov;
+  document.getElementById('rh-desc').textContent  = '';
+
+  renderCityBar();
+  renderTabs();
+  showPage('region');
+  loadSpots(city.area, city.si, '', city.name);
+
+  document.getElementById('hdr-input').value = '';
+  closeSearch();
+}
+
+// ── 시군구 선택바 ──
+function renderCityBar(){
+  const provCities = CITIES.filter(c=>c.area===curSido.area);
+  if(!provCities.length){
+    document.getElementById('city-bar').innerHTML=''; return;
+  }
+  const activeSi = curCity ? curCity.si : '';
+  document.getElementById('city-bar').innerHTML =
+    `<button class="cbar-btn ${activeSi===''?'active':''}" onclick="selCity(null)">전체</button>` +
+    provCities.map(c=>`
+      <button class="cbar-btn ${(curCity&&curCity.id===c.id)?'active':''}" onclick="selCity('${c.id}')">${c.name}</button>
+    `).join('');
+}
+
+function selCity(cid){
+  if(!cid){ curCity=null; renderCityBar(); renderTabs(); loadSpots(curSido.area,'',curTab,''); return; }
+  curCity = CITIES.find(c=>c.id===cid);
+  renderCityBar(); renderTabs();
+  loadSpots(curCity.area, curCity.si, curTab, curCity.name);
+}
+
+// ── 카테고리 탭 ──
+function renderTabs(){
+  document.getElementById('tab-bar').innerHTML = TABS.map(t=>`
+    <button class="tab-btn ${t.id===curTab?'active':''}" onclick="selTab('${t.id}')">
+      <i data-lucide="${t.icon}" style="width:11px;height:11px;"></i>${t.label}
+    </button>`).join('');
+  lucide.createIcons();
+}
+function selTab(id){
+  curTab=id; renderTabs();
+  const a = curCity ? curCity.area : curSido.area;
+  const si = curCity ? curCity.si  : '';
+  loadSpots(a, si, id, curCity ? curCity.name : '');
+}
+
+// ── 검색 ──
+function onHdrInput(v){
+  if(!v.trim()){ closeSearch(); return; }
+  const q=v.trim().toLowerCase();
+  const hits = CITIES.filter(c=>c.name.includes(v.trim())||c.prov.includes(v.trim())).slice(0,12);
+  const drop = document.getElementById('search-drop');
+  if(!hits.length){
+    drop.innerHTML=`<div class="sdrop-empty">검색 결과가 없어요</div>`;
+  } else {
+    drop.innerHTML = hits.map(c=>`
+      <div class="sdrop-item" onclick="openCity('${c.id}')">
+        <img class="sdrop-thumb" src="${c.img}" alt="${c.name}" onerror="this.style.display='none'"/>
+        <div><div class="sdrop-name">${c.emoji} ${c.name}</div><div class="sdrop-prov">${c.prov}</div></div>
+      </div>`).join('');
+  }
+  drop.style.display='block';
+  lucide.createIcons();
+}
+function onHdrFocus(){
+  const v = document.getElementById('hdr-input').value;
+  if(v.trim()) onHdrInput(v);
+}
+function closeSearch(){
+  document.getElementById('search-drop').style.display='none';
+}
+function onHdrKey(e){
+  if(e.key==='Enter'){
+    const first = document.querySelector('.sdrop-item');
+    if(first){ first.click(); return; }
+    // 시도 이름과 매칭되면 시도 열기
+    const v = e.target.value.trim();
+    const sido = SIDOS.find(s=>s.name===v||s.name.includes(v));
+    if(sido) openSido(sido.id);
+  }
+  if(e.key==='Escape') closeSearch();
+}
+
+// ── 고정 추가 데이터 (TourAPI 미등록 장소) ──
+const PINNED = [
+  {
+    contentid:'_gobawu', contenttypeid:'39', area:'37', si:'1',
+    title:'고바우장어', addr1:'전북특별자치도 고창군 고창읍 중앙로 23',
+    tel:'063-563-3473', firstimage:'https://raw.githubusercontent.com/youseungoh/Tour/main/gobawu.jpg',
+    mapx:'126.7022', mapy:'35.4346',
+    _pinned: true
+  },
+  {
+    contentid:'_teotnbat', contenttypeid:'39', area:'37', si:'1',
+    title:'텃밭쌈밥', addr1:'전북특별자치도 고창군 고창읍 읍내로 61',
+    tel:'', firstimage:'https://raw.githubusercontent.com/youseungoh/Tour/main/tutbat.jpg',
+    _pinned: true
+  },
+  {
+    contentid:'_ajung', contenttypeid:'trail', area:'37', si:'12',
+    title:'아중호수 둘레길', addr1:'전북특별자치도 전주시 덕진구 아중리',
+    tel:'063-281-2114', firstimage:'https://raw.githubusercontent.com/youseungoh/Tour/main/ajung.jpg',
+    mapx:'127.1089', mapy:'35.8468',
+    overview:'전주 아중저수지를 따라 조성된 수변 둘레길. 봄 벚꽃과 신록이 어우러지는 호수 데크길로 가족 나들이와 산책에 제격이다.',
+    _pinned: true
+  },
+  {
+    contentid:'_yonggeol', contenttypeid:'trail', area:'37', si:'7',
+    title:'용걸산 하늘길', addr1:'전북특별자치도 순창군 쌍치면 시산리',
+    tel:'063-650-1672', firstimage:'https://raw.githubusercontent.com/youseungoh/Tour/main/yonggeol.jpg',
+    mapx:'127.0012', mapy:'35.4521',
+    overview:'순창 쌍치면 용걸산에 조성된 하늘길 트레킹 코스. 아찔한 벼랑 위 데크길과 섬진강 줄기가 한눈에 내려다보이는 절경이 펼쳐진다.',
+    _pinned: true
+  },
+  // ===== 전국 시군구 대표 명소 (인기 순) =====
+  {contentid:'_spot_seoul_01', contenttypeid:'12', area:'1', si:'23', title:'경복궁', addr1:'서울특별시 종로구 사직로 161', tel:'02-3700-3900', mapx:'126.9769', mapy:'37.5796', overview:'조선 왕조 제일의 법궁으로 1395년 창건. 근정전, 경회루, 수문장 교대식이 유명하다.', _pinned:true},
+  {contentid:'_spot_seoul_02', contenttypeid:'12', area:'1', si:'21', title:'남산서울타워(N서울타워)', addr1:'서울특별시 용산구 남산공원길 105', tel:'02-3455-9277', mapx:'126.9882', mapy:'37.5512', overview:'서울의 랜드마크로 해발 480m 높이에서 서울 전경을 조망할 수 있다.', _pinned:true},
+  {contentid:'_spot_seoul_03', contenttypeid:'12', area:'1', si:'18', title:'롯데월드타워 서울스카이', addr1:'서울특별시 송파구 올림픽로 300', tel:'02-3213-5000', mapx:'127.1025', mapy:'37.5125', overview:'국내 최고층 555m 전망대. 유리 바닥 스카이데크에서 스릴 있는 전망을 즐길 수 있다.', _pinned:true},
+  {contentid:'_spot_seoul_04', contenttypeid:'12', area:'1', si:'23', title:'북촌한옥마을', addr1:'서울특별시 종로구 계동길 37', tel:'02-2133-1372', mapx:'126.9850', mapy:'37.5826', overview:'경복궁과 창덕궁 사이의 전통 한옥 밀집지역. 서울 대표 포토스팟.', _pinned:true},
+  {contentid:'_spot_seoul_05', contenttypeid:'12', area:'1', si:'13', title:'홍대거리', addr1:'서울특별시 마포구 양화로', tel:'', mapx:'126.9235', mapy:'37.5563', overview:'젊음의 거리로 클럽, 카페, 라이브 공연이 활발한 서울의 대표 문화지역.', _pinned:true},
+  {contentid:'_spot_seoul_06', contenttypeid:'12', area:'1', si:'23', title:'명동거리', addr1:'서울특별시 중구 명동길', tel:'02-778-0333', mapx:'126.9856', mapy:'37.5636', overview:'외국인 관광객 1위 쇼핑 거리. 화장품, 패션, 먹거리 명소.', _pinned:true},
+  {contentid:'_spot_seoul_07', contenttypeid:'12', area:'1', si:'23', title:'광장시장', addr1:'서울특별시 종로구 창경궁로 88', tel:'02-2267-0291', mapx:'126.9998', mapy:'37.5701', overview:'100년 역사의 전통시장. 빈대떡, 마약김밥, 육회 등 먹거리로 유명.', _pinned:true},
+  {contentid:'_spot_seoul_08', contenttypeid:'12', area:'1', si:'23', title:'창덕궁과 후원', addr1:'서울특별시 종로구 율곡로 99', tel:'02-3668-2300', mapx:'126.9910', mapy:'37.5794', overview:'유네스코 세계문화유산으로 등재된 조선의 이궁. 비원의 아름다움으로 유명.', _pinned:true},
+  {contentid:'_spot_seoul_09', contenttypeid:'14', area:'1', si:'21', title:'국립중앙박물관', addr1:'서울특별시 용산구 서빙고로 137', tel:'02-2077-9000', mapx:'126.9803', mapy:'37.5240', overview:'한국을 대표하는 국립박물관. 33만여 점 문화재 소장. 반가사유상이 명물.', _pinned:true},
+  {contentid:'_spot_seoul_10', contenttypeid:'12', area:'1', si:'20', title:'여의도 한강공원', addr1:'서울특별시 영등포구 여의동로 330', tel:'02-3780-0561', mapx:'126.9330', mapy:'37.5285', overview:'벚꽃축제와 세계불꽃축제가 열리는 한강의 대표 공원.', _pinned:true},
+  {contentid:'_spot_seoul_11', contenttypeid:'12', area:'1', si:'23', title:'인사동 문화거리', addr1:'서울특별시 종로구 인사동길', tel:'02-737-7890', mapx:'126.9853', mapy:'37.5744', overview:'전통 공예품과 갤러리, 찻집이 밀집한 서울의 대표 문화 거리.', _pinned:true},
+  {contentid:'_spot_seoul_12', contenttypeid:'12', area:'1', si:'22', title:'북한산국립공원', addr1:'서울특별시 은평구 진관동', tel:'02-909-0497', mapx:'126.9884', mapy:'37.6588', overview:'도심 속 국립공원. 백운대, 인수봉 등 화강암 봉우리와 등산코스로 유명.', _pinned:true},
+  {contentid:'_spot_seoul_13', contenttypeid:'39', area:'1', si:'24', title:'우래옥', addr1:'서울특별시 중구 창경궁로 62-29', tel:'02-2265-0151', mapx:'126.9989', mapy:'37.5679', overview:'1946년 개업한 서울 3대 평양냉면집. 미쉐린 가이드 등재 노포.', _pinned:true},
+  {contentid:'_spot_busan_01', contenttypeid:'12', area:'6', si:'16', title:'해운대해수욕장', addr1:'부산광역시 해운대구 우동', tel:'051-749-7614', mapx:'129.1603', mapy:'35.1587', overview:'부산을 대표하는 백사장 1.5km의 해수욕장. 여름 피서지 1번지.', _pinned:true},
+  {contentid:'_spot_busan_02', contenttypeid:'12', area:'6', si:'12', title:'광안리해수욕장', addr1:'부산광역시 수영구 광안해변로', tel:'051-622-4251', mapx:'129.1183', mapy:'35.1531', overview:'광안대교 야경으로 유명한 해수욕장. 드론쇼와 불꽃축제가 열린다.', _pinned:true},
+  {contentid:'_spot_busan_03', contenttypeid:'12', area:'6', si:'10', title:'감천문화마을', addr1:'부산광역시 사하구 감내2로 203', tel:'051-204-1444', mapx:'128.9887', mapy:'35.0973', overview:'산비탈에 층층이 지어진 알록달록한 집들. 한국의 마추픽추라 불린다.', _pinned:true},
+  {contentid:'_spot_busan_04', contenttypeid:'12', area:'6', si:'15', title:'자갈치시장', addr1:'부산광역시 중구 자갈치해안로 52', tel:'051-713-8000', mapx:'129.0303', mapy:'35.0968', overview:'한국 최대 수산물 시장. 신선한 회와 해산물을 맛볼 수 있다.', _pinned:true},
+  {contentid:'_spot_busan_05', contenttypeid:'12', area:'6', si:'14', title:'태종대', addr1:'부산광역시 영도구 전망로 209', tel:'051-405-8745', mapx:'129.0864', mapy:'35.0537', overview:'울창한 숲과 기암절벽이 어우러진 부산의 대표 명승지.', _pinned:true},
+  {contentid:'_spot_busan_06', contenttypeid:'12', area:'6', si:'15', title:'BIFF광장·국제시장', addr1:'부산광역시 중구 남포동', tel:'051-253-2681', mapx:'129.0281', mapy:'35.0985', overview:'부산국제영화제 발상지이자 남포동 대표 관광·쇼핑거리.', _pinned:true},
+  {contentid:'_spot_busan_07', contenttypeid:'12', area:'6', si:'16', title:'해운대 블루라인파크 스카이캡슐', addr1:'부산광역시 해운대구 미포', tel:'051-701-5548', mapx:'129.1758', mapy:'35.1580', overview:'미포~청사포 해안선을 따라 달리는 관광열차·캡슐카.', _pinned:true},
+  {contentid:'_spot_busan_08', contenttypeid:'12', area:'6', si:'2', title:'범어사', addr1:'부산광역시 금정구 범어사로 250', tel:'051-508-3122', mapx:'129.0844', mapy:'35.2833', overview:'금정산 자락 신라 화엄십찰 중 하나. 한국 5대 사찰.', _pinned:true},
+  {contentid:'_spot_busan_09', contenttypeid:'12', area:'6', si:'3', title:'기장 아난티코브·이터널저니', addr1:'부산광역시 기장군 기장읍 기장해안로 268-31', tel:'051-604-2999', mapx:'129.2313', mapy:'35.1841', overview:'부산 기장의 럭셔리 리조트와 대형 서점 복합공간.', _pinned:true},
+  {contentid:'_spot_daegu_01', contenttypeid:'12', area:'4', si:'9', title:'서문시장', addr1:'대구광역시 중구 큰장로26길 45', tel:'053-256-6341', mapx:'128.5822', mapy:'35.8697', overview:'대구 최대의 전통시장. 서문시장 야시장은 필수 코스.', _pinned:true},
+  {contentid:'_spot_daegu_02', contenttypeid:'12', area:'4', si:'9', title:'김광석다시그리기길', addr1:'대구광역시 중구 달구벌대로450길', tel:'053-661-3328', mapx:'128.6033', mapy:'35.8657', overview:'가수 김광석을 기리는 벽화거리. 방천시장과 이어진 문화명소.', _pinned:true},
+  {contentid:'_spot_daegu_03', contenttypeid:'12', area:'4', si:'9', title:'근대문화골목', addr1:'대구광역시 중구 진골목길', tel:'053-661-2000', mapx:'128.5945', mapy:'35.8686', overview:'청라언덕, 계산성당, 이상화 고택을 잇는 근대문화 도보 코스.', _pinned:true},
+  {contentid:'_spot_daegu_04', contenttypeid:'12', area:'4', si:'5', title:'팔공산 갓바위', addr1:'대구광역시 동구 팔공산로1103길', tel:'053-989-6415', mapx:'128.7203', mapy:'35.9908', overview:'한 가지 소원은 들어준다는 팔공산 정상의 석조여래좌상.', _pinned:true},
+  {contentid:'_spot_daegu_05', contenttypeid:'12', area:'4', si:'4', title:'비슬산 참꽃군락지', addr1:'대구광역시 달성군 유가읍 비슬산길', tel:'053-614-5481', mapx:'128.5253', mapy:'35.7175', overview:'봄이면 진달래로 붉게 물드는 대구의 대표 산.', _pinned:true},
+  {contentid:'_spot_daegu_06', contenttypeid:'39', area:'4', si:'2', title:'안지랑곱창골목', addr1:'대구광역시 남구 안지랑로16길', tel:'053-476-2000', mapx:'128.5878', mapy:'35.8383', overview:'대구 3대 별미거리. 곱창구이 전문점이 밀집.', _pinned:true},
+  {contentid:'_spot_incheon_01', contenttypeid:'12', area:'2', si:'10', title:'인천 차이나타운', addr1:'인천광역시 중구 차이나타운로', tel:'032-810-2851', mapx:'126.6180', mapy:'37.4753', overview:'한국 최대 차이나타운. 짜장면의 발상지로 유명.', _pinned:true},
+  {contentid:'_spot_incheon_02', contenttypeid:'12', area:'2', si:'8', title:'송도 센트럴파크', addr1:'인천광역시 연수구 컨벤시아대로 160', tel:'032-721-4415', mapx:'126.6437', mapy:'37.3946', overview:'해수를 이용한 국내 최초의 도심 해수 공원.', _pinned:true},
+  {contentid:'_spot_incheon_03', contenttypeid:'12', area:'2', si:'10', title:'송월동 동화마을', addr1:'인천광역시 중구 송월동3가', tel:'032-760-6494', mapx:'126.6167', mapy:'37.4761', overview:'세계 명작동화를 테마로 조성된 벽화마을.', _pinned:true},
+  {contentid:'_spot_incheon_04', contenttypeid:'12', area:'2', si:'10', title:'월미도', addr1:'인천광역시 중구 월미문화로', tel:'032-765-4169', mapx:'126.5972', mapy:'37.4749', overview:'인천 앞바다의 관광지. 놀이공원과 문화거리가 있다.', _pinned:true},
+  {contentid:'_spot_incheon_05', contenttypeid:'12', area:'2', si:'1', title:'강화 전등사', addr1:'인천광역시 강화군 길상면 전등사로 37-41', tel:'032-937-0125', mapx:'126.4844', mapy:'37.6321', overview:'삼랑성 안에 위치한 우리나라에서 가장 오래된 사찰 중 하나.', _pinned:true},
+  {contentid:'_spot_incheon_06', contenttypeid:'12', area:'2', si:'1', title:'강화 석모도 미네랄온천', addr1:'인천광역시 강화군 삼산면 삼산남로', tel:'032-930-7053', mapx:'126.3247', mapy:'37.7075', overview:'서해 바다를 조망하며 즐기는 노천 미네랄 온천.', _pinned:true},
+  {contentid:'_spot_gwangju_01', contenttypeid:'14', area:'5', si:'3', title:'국립아시아문화전당', addr1:'광주광역시 동구 문화전당로 38', tel:'1899-5566', mapx:'126.9192', mapy:'35.1467', overview:'아시아 문화 교류 허브. 옛 전남도청 자리에 조성된 복합문화공간.', _pinned:true},
+  {contentid:'_spot_gwangju_02', contenttypeid:'12', area:'5', si:'3', title:'양림동 근대역사문화마을', addr1:'광주광역시 남구 서서평길', tel:'062-676-4486', mapx:'126.9147', mapy:'35.1391', overview:'선교사 사택과 근대 건축물이 남아있는 광주의 근대역사 마을.', _pinned:true},
+  {contentid:'_spot_gwangju_03', contenttypeid:'12', area:'5', si:'4', title:'국립5·18민주묘지', addr1:'광주광역시 북구 민주로 200', tel:'062-268-0518', mapx:'126.9469', mapy:'35.2308', overview:'5·18 민주화운동 희생자들이 안장된 국립묘지.', _pinned:true},
+  {contentid:'_spot_gwangju_04', contenttypeid:'39', area:'5', si:'2', title:'송정 떡갈비 골목', addr1:'광주광역시 광산구 광산로29번길', tel:'062-940-8830', mapx:'126.7900', mapy:'35.1394', overview:'송정역 앞의 떡갈비 원조 골목. 60년 전통 노포가 즐비.', _pinned:true},
+  {contentid:'_spot_daejeon_01', contenttypeid:'39', area:'3', si:'5', title:'성심당 본점', addr1:'대전광역시 중구 대종로480번길 15', tel:'042-256-4114', mapx:'127.4272', mapy:'36.3283', overview:'1956년 개업한 대전의 명물 빵집. 튀김소보로와 부추빵으로 유명.', _pinned:true},
+  {contentid:'_spot_daejeon_02', contenttypeid:'12', area:'3', si:'4', title:'유성온천', addr1:'대전광역시 유성구 계룡로', tel:'042-611-2103', mapx:'127.3428', mapy:'36.3547', overview:'백제시대부터 이용된 유서 깊은 국내 대표 온천지구.', _pinned:true},
+  {contentid:'_spot_daejeon_03', contenttypeid:'14', area:'3', si:'4', title:'국립중앙과학관', addr1:'대전광역시 유성구 대덕대로 481', tel:'042-601-7894', mapx:'127.3781', mapy:'36.3762', overview:'과학기술의 역사와 미래를 체험할 수 있는 국립 과학관.', _pinned:true},
+  {contentid:'_spot_daejeon_04', contenttypeid:'12', area:'3', si:'2', title:'대청호 오백리길', addr1:'대전광역시 동구 추동', tel:'042-608-6558', mapx:'127.4831', mapy:'36.3928', overview:'대청호 주변을 도는 트레킹 코스. 물과 산이 어우러진 절경.', _pinned:true},
+  {contentid:'_spot_daejeon_05', contenttypeid:'12', area:'3', si:'3', title:'뿌리공원', addr1:'대전광역시 중구 뿌리공원로 47', tel:'042-580-4227', mapx:'127.4139', mapy:'36.2778', overview:'성씨별 조형물이 있는 효 테마 공원.', _pinned:true},
+  {contentid:'_spot_ulsan_01', contenttypeid:'12', area:'7', si:'3', title:'태화강 국가정원', addr1:'울산광역시 중구 태화강국가정원길', tel:'052-229-3800', mapx:'129.3097', mapy:'35.5514', overview:'대한민국 제2호 국가정원. 십리대숲으로 유명.', _pinned:true},
+  {contentid:'_spot_ulsan_02', contenttypeid:'12', area:'7', si:'4', title:'간절곶', addr1:'울산광역시 울주군 서생면 대송리', tel:'052-204-0332', mapx:'129.3600', mapy:'35.3572', overview:'한반도 육지에서 새해 해가 가장 먼저 뜨는 곳.', _pinned:true},
+  {contentid:'_spot_ulsan_03', contenttypeid:'14', area:'7', si:'4', title:'반구대 암각화', addr1:'울산광역시 울주군 언양읍 대곡리', tel:'052-229-4797', mapx:'129.1786', mapy:'35.6039', overview:'선사시대 고래잡이 등을 새긴 국보 285호 암각화.', _pinned:true},
+  {contentid:'_spot_ulsan_04', contenttypeid:'12', area:'7', si:'4', title:'영남알프스', addr1:'울산광역시 울주군 상북면', tel:'052-229-9590', mapx:'129.0056', mapy:'35.5714', overview:'가지산·신불산 등 1000m 이상 산 9개가 이어진 명산 군락.', _pinned:true},
+  {contentid:'_spot_sejong_01', contenttypeid:'12', area:'8', si:'1', title:'국립세종수목원', addr1:'세종특별자치시 수목원로 136', tel:'044-251-0001', mapx:'127.2620', mapy:'36.5017', overview:'국내 최대 도심형 수목원. 사계절 온실이 유명.', _pinned:true},
+  {contentid:'_spot_sejong_02', contenttypeid:'14', area:'8', si:'1', title:'국립세종도서관', addr1:'세종특별자치시 다솜3로 48', tel:'044-900-9114', mapx:'127.2596', mapy:'36.5024', overview:'책 펼침을 형상화한 독특한 건축미의 국립도서관.', _pinned:true},
+  {contentid:'_spot_gg_01', contenttypeid:'12', area:'31', si:'23', title:'에버랜드', addr1:'경기도 용인시 처인구 포곡읍 에버랜드로 199', tel:'031-320-5000', mapx:'127.2020', mapy:'37.2941', overview:'국내 최대 테마파크. 판다월드와 T익스프레스가 대표 명물.', _pinned:true},
+  {contentid:'_spot_gg_02', contenttypeid:'12', area:'31', si:'13', title:'수원 화성', addr1:'경기도 수원시 팔달구 정조로 910', tel:'031-290-3600', mapx:'127.0129', mapy:'37.2851', overview:'정조대왕이 축조한 유네스코 세계문화유산 성곽.', _pinned:true},
+  {contentid:'_spot_gg_03', contenttypeid:'12', area:'31', si:'1', title:'가평 남이섬', addr1:'경기도 가평군 가평읍 북한강변로 1024', tel:'031-580-8114', mapx:'127.5253', mapy:'37.7906', overview:'겨울연가 촬영지로 유명한 국제관광지. 메타세쿼이아 길이 명물.', _pinned:true},
+  {contentid:'_spot_gg_04', contenttypeid:'12', area:'31', si:'1', title:'가평 아침고요수목원', addr1:'경기도 가평군 상면 수목원로 432', tel:'1544-6703', mapx:'127.4033', mapy:'37.8225', overview:'축령산 자락의 사계절 정원. 겨울 오색별빛정원전이 유명.', _pinned:true},
+  {contentid:'_spot_gg_05', contenttypeid:'12', area:'31', si:'27', title:'파주 임진각·평화누리공원', addr1:'경기도 파주시 문산읍 임진각로 148-40', tel:'031-953-4744', mapx:'126.7407', mapy:'37.8994', overview:'분단의 아픔을 상징하는 임진각 관광지. 평화누리공원과 곤돌라.', _pinned:true},
+  {contentid:'_spot_gg_06', contenttypeid:'12', area:'31', si:'27', title:'파주 헤이리 예술마을', addr1:'경기도 파주시 탄현면 헤이리마을길 82-105', tel:'031-946-8551', mapx:'126.6947', mapy:'37.8339', overview:'예술가들이 모여 만든 문화예술 마을. 갤러리와 카페 다수.', _pinned:true},
+  {contentid:'_spot_gg_07', contenttypeid:'12', area:'31', si:'19', title:'양평 두물머리', addr1:'경기도 양평군 양서면 양수리', tel:'031-770-2101', mapx:'127.3175', mapy:'37.5406', overview:'북한강과 남한강이 만나는 곳. 물안개와 느티나무가 명물.', _pinned:true},
+  {contentid:'_spot_gg_08', contenttypeid:'12', area:'31', si:'2', title:'일산 호수공원', addr1:'경기도 고양시 일산동구 호수로 731', tel:'031-8075-4347', mapx:'126.7772', mapy:'37.6592', overview:'국내 최대 인공호수공원. 벚꽃길과 자전거길이 유명.', _pinned:true},
+  {contentid:'_spot_gg_09', contenttypeid:'12', area:'31', si:'29', title:'포천 산정호수', addr1:'경기도 포천시 영북면 산정호수로 411번길', tel:'031-532-6135', mapx:'127.3178', mapy:'38.0522', overview:'명성산 자락의 아름다운 자연호수. 케이블카와 조각공원.', _pinned:true},
+  {contentid:'_spot_gg_10', contenttypeid:'12', area:'31', si:'29', title:'포천 허브아일랜드', addr1:'경기도 포천시 신북면 청신로947번길 51', tel:'031-535-6494', mapx:'127.2419', mapy:'37.9750', overview:'국내 최대 허브 테마파크. 겨울 불빛축제로 유명.', _pinned:true},
+  {contentid:'_spot_gg_11', contenttypeid:'12', area:'31', si:'26', title:'이천 도자기마을(예스파크)', addr1:'경기도 이천시 경충대로 2697', tel:'031-644-2944', mapx:'127.4419', mapy:'37.2825', overview:'도자기 축제로 유명한 예술마을. 체험과 구매가 가능.', _pinned:true},
+  {contentid:'_spot_gg_12', contenttypeid:'12', area:'31', si:'15', title:'안산 대부도', addr1:'경기도 안산시 단원구 대부동', tel:'032-886-9611', mapx:'126.5867', mapy:'37.2694', overview:'수도권에서 가까운 갯벌 체험과 조개구이로 유명한 섬.', _pinned:true},
+  {contentid:'_spot_gw_01', contenttypeid:'12', area:'32', si:'5', title:'설악산 국립공원', addr1:'강원특별자치도 속초시 설악산로 833', tel:'033-801-0900', mapx:'128.4655', mapy:'38.1194', overview:'한국의 대표 명산. 대청봉과 흔들바위, 신흥사가 유명.', _pinned:true},
+  {contentid:'_spot_gw_02', contenttypeid:'12', area:'32', si:'1', title:'강릉 경포해변·경포호', addr1:'강원특별자치도 강릉시 창해로 514', tel:'033-640-4901', mapx:'128.9004', mapy:'37.7997', overview:'동해안 대표 해수욕장과 호수. 벚꽃길로도 유명.', _pinned:true},
+  {contentid:'_spot_gw_03', contenttypeid:'12', area:'32', si:'1', title:'강릉 안목해변 커피거리', addr1:'강원특별자치도 강릉시 창해로14번길 20-1', tel:'033-640-4901', mapx:'128.9469', mapy:'37.7717', overview:'바다를 보며 커피를 마시는 강릉의 대표 카페 거리.', _pinned:true},
+  {contentid:'_spot_gw_04', contenttypeid:'12', area:'32', si:'15', title:'평창 대관령 양떼목장', addr1:'강원특별자치도 평창군 대관령면 대관령마루길 483-32', tel:'033-335-1966', mapx:'128.7325', mapy:'37.6844', overview:'해발 850m 대관령의 이국적 양떼목장. 사계절 인기 명소.', _pinned:true},
+  {contentid:'_spot_gw_05', contenttypeid:'12', area:'32', si:'15', title:'월정사 전나무숲길', addr1:'강원특별자치도 평창군 진부면 오대산로 374-8', tel:'033-339-6800', mapx:'128.5919', mapy:'37.7311', overview:'오대산 월정사 입구의 1km 전나무 산책로. 한국 3대 전나무 숲.', _pinned:true},
+  {contentid:'_spot_gw_06', contenttypeid:'12', area:'32', si:'13', title:'춘천 소양강스카이워크', addr1:'강원특별자치도 춘천시 영서로 2965', tel:'033-240-1695', mapx:'127.7231', mapy:'37.8842', overview:'소양강 위에 조성된 156m 유리 스카이워크.', _pinned:true},
+  {contentid:'_spot_gw_07', contenttypeid:'39', area:'32', si:'13', title:'춘천 명동 닭갈비골목', addr1:'강원특별자치도 춘천시 조양동 명동', tel:'', mapx:'127.7311', mapy:'37.8792', overview:'춘천의 명물 닭갈비 원조 골목.', _pinned:true},
+  {contentid:'_spot_gw_08', contenttypeid:'12', area:'32', si:'7', title:'양양 서피비치', addr1:'강원특별자치도 양양군 현북면 하조대해안길 119', tel:'033-672-0695', mapx:'128.7739', mapy:'37.9014', overview:'국내 대표 서핑 해변. 젊은이들의 여름 성지.', _pinned:true},
+  {contentid:'_spot_gw_09', contenttypeid:'12', area:'32', si:'7', title:'양양 낙산사', addr1:'강원특별자치도 양양군 강현면 낙산사로 100', tel:'033-672-2447', mapx:'128.6289', mapy:'38.1230', overview:'동해 절벽 위 관음성지. 홍련암과 해수관음상이 유명.', _pinned:true},
+  {contentid:'_spot_gw_10', contenttypeid:'12', area:'32', si:'11', title:'정선 하이원 하늘길', addr1:'강원특별자치도 정선군 고한읍 하이원길 265', tel:'1588-7789', mapx:'128.7972', mapy:'37.2136', overview:'해발 1340m 곤돌라 정상의 트레킹 코스. 만항재 야생화가 유명.', _pinned:true},
+  {contentid:'_spot_gw_11', contenttypeid:'12', area:'32', si:'8', title:'영월 한반도 지형', addr1:'강원특별자치도 영월군 한반도면 한반도로', tel:'033-372-3229', mapx:'128.3081', mapy:'37.2378', overview:'한반도 지형을 그대로 닮은 서강의 절경.', _pinned:true},
+  {contentid:'_spot_gw_12', contenttypeid:'12', area:'32', si:'9', title:'원주 소금산 출렁다리', addr1:'강원특별자치도 원주시 지정면 소금산길 26', tel:'033-737-5044', mapx:'127.7644', mapy:'37.3364', overview:'길이 200m, 지상 100m의 국내 최장급 산악 보도교.', _pinned:true},
+  {contentid:'_spot_gw_13', contenttypeid:'12', area:'32', si:'3', title:'동해 추암 촛대바위', addr1:'강원특별자치도 동해시 촛대바위길 26', tel:'033-530-2801', mapx:'129.1836', mapy:'37.4808', overview:'애국가 첫 소절 영상에 나오는 동해의 명물 바위.', _pinned:true},
+  {contentid:'_spot_gw_14', contenttypeid:'12', area:'32', si:'14', title:'태백산 국립공원', addr1:'강원특별자치도 태백시 천제단길 27', tel:'033-550-0330', mapx:'128.9153', mapy:'37.0906', overview:'천제단이 있는 민족의 영산. 겨울 눈꽃축제로 유명.', _pinned:true},
+  {contentid:'_spot_cb_01', contenttypeid:'12', area:'33', si:'2', title:'단양 도담삼봉', addr1:'충청북도 단양군 매포읍 삼봉로', tel:'043-422-3037', mapx:'128.3722', mapy:'36.9822', overview:'남한강 위 세 개의 봉우리로 이루어진 단양팔경 제1경.', _pinned:true},
+  {contentid:'_spot_cb_02', contenttypeid:'12', area:'33', si:'2', title:'단양 만천하스카이워크', addr1:'충청북도 단양군 단양읍 삼봉로 644-33', tel:'043-421-0014', mapx:'128.3892', mapy:'36.9856', overview:'남한강 절벽 위 80m 유리 스카이워크.', _pinned:true},
+  {contentid:'_spot_cb_03', contenttypeid:'12', area:'33', si:'3', title:'속리산 법주사', addr1:'충청북도 보은군 속리산면 법주사로 405', tel:'043-543-3615', mapx:'127.8300', mapy:'36.5439', overview:'유네스코 세계유산 산사. 국내 최대 목탑 팔상전이 있다.', _pinned:true},
+  {contentid:'_spot_cb_04', contenttypeid:'12', area:'33', si:'9', title:'청주 수암골 벽화마을', addr1:'충청북도 청주시 상당구 수동 수암로', tel:'043-201-2064', mapx:'127.4869', mapy:'36.6394', overview:'제빵왕 김탁구 촬영지. 청주 시내가 한눈에 보이는 야경 명소.', _pinned:true},
+  {contentid:'_spot_cb_05', contenttypeid:'14', area:'33', si:'9', title:'국립현대미술관 청주관', addr1:'충청북도 청주시 청원구 상당로 314', tel:'043-261-1400', mapx:'127.4894', mapy:'36.6647', overview:'옛 연초제조창을 리모델링한 국립미술관. 개방형 수장고 관람 가능.', _pinned:true},
+  {contentid:'_spot_cb_06', contenttypeid:'12', area:'33', si:'10', title:'충주호 유람선', addr1:'충청북도 충주시 종민동', tel:'043-851-5771', mapx:'127.9639', mapy:'36.9856', overview:'월악산과 어우러진 충주호를 유람하는 명물 유람선.', _pinned:true},
+  {contentid:'_spot_cn_01', contenttypeid:'12', area:'34', si:'14', title:'태안 안면도 꽃지해수욕장', addr1:'충청남도 태안군 안면읍 승언리', tel:'041-670-2691', mapx:'126.3400', mapy:'36.4211', overview:'할미바위와 할아비바위의 낙조가 유명한 서해의 절경.', _pinned:true},
+  {contentid:'_spot_cn_02', contenttypeid:'12', area:'34', si:'6', title:'보령 대천해수욕장', addr1:'충청남도 보령시 신흑동', tel:'041-930-3820', mapx:'126.5075', mapy:'36.3167', overview:'국내 최대 머드축제로 유명한 서해안 대표 해수욕장.', _pinned:true},
+  {contentid:'_spot_cn_03', contenttypeid:'12', area:'34', si:'2', title:'공주 공산성', addr1:'충청남도 공주시 웅진로 280', tel:'041-856-7700', mapx:'127.1236', mapy:'36.4650', overview:'백제의 왕성. 유네스코 세계문화유산 백제역사유적지구.', _pinned:true},
+  {contentid:'_spot_cn_04', contenttypeid:'14', area:'34', si:'7', title:'국립부여박물관', addr1:'충청남도 부여군 부여읍 금성로 5', tel:'041-833-8562', mapx:'126.9153', mapy:'36.2731', overview:'백제 문화유산을 소장한 박물관. 백제금동대향로가 대표 소장품.', _pinned:true},
+  {contentid:'_spot_cn_05', contenttypeid:'12', area:'34', si:'8', title:'서산 해미읍성', addr1:'충청남도 서산시 해미면 남문2로 143', tel:'041-660-2540', mapx:'126.5967', mapy:'36.7025', overview:'조선시대 대표 읍성. 천주교 순교성지로도 알려짐.', _pinned:true},
+  {contentid:'_spot_cn_06', contenttypeid:'12', area:'34', si:'12', title:'천안 독립기념관', addr1:'충청남도 천안시 동남구 목천읍 삼방로 95', tel:'041-560-0114', mapx:'127.2100', mapy:'36.7817', overview:'한국 독립운동사를 전시한 국내 최대 규모의 역사교육관.', _pinned:true},
+  {contentid:'_spot_cn_07', contenttypeid:'12', area:'34', si:'10', title:'아산 외암민속마을', addr1:'충청남도 아산시 송악면 외암민속길 42-15', tel:'041-544-8290', mapx:'126.9931', mapy:'36.7361', overview:'조선 후기 반가의 모습을 그대로 간직한 국가민속문화재 마을.', _pinned:true},
+  {contentid:'_spot_gb_01', contenttypeid:'12', area:'35', si:'2', title:'경주 불국사', addr1:'경상북도 경주시 불국로 385', tel:'054-746-9913', mapx:'129.3319', mapy:'35.7900', overview:'유네스코 세계문화유산. 다보탑과 석가탑이 있는 신라 대표 사찰.', _pinned:true},
+  {contentid:'_spot_gb_02', contenttypeid:'12', area:'35', si:'2', title:'경주 석굴암', addr1:'경상북도 경주시 진현동 891', tel:'054-746-9933', mapx:'129.3494', mapy:'35.7947', overview:'토함산의 인공석굴 사원. 본존불이 국보 24호.', _pinned:true},
+  {contentid:'_spot_gb_03', contenttypeid:'12', area:'35', si:'2', title:'경주 동궁과 월지', addr1:'경상북도 경주시 원화로 102', tel:'054-750-8655', mapx:'129.2258', mapy:'35.8347', overview:'신라 왕궁 별궁터. 야경이 아름다운 경주 대표 명소.', _pinned:true},
+  {contentid:'_spot_gb_04', contenttypeid:'12', area:'35', si:'2', title:'경주 첨성대', addr1:'경상북도 경주시 인왕동 839-1', tel:'054-772-3843', mapx:'129.2192', mapy:'35.8347', overview:'동양 최고(最古) 천문대. 신라 선덕여왕 때 축조.', _pinned:true},
+  {contentid:'_spot_gb_05', contenttypeid:'12', area:'35', si:'2', title:'경주 황리단길', addr1:'경상북도 경주시 포석로', tel:'', mapx:'129.2131', mapy:'35.8383', overview:'대릉원 인근의 한옥 카페 거리. 젊은 관광객의 성지.', _pinned:true},
+  {contentid:'_spot_gb_06', contenttypeid:'12', area:'35', si:'11', title:'안동 하회마을', addr1:'경상북도 안동시 풍천면 하회종가길 40', tel:'054-853-0103', mapx:'128.5250', mapy:'36.5386', overview:'유네스코 세계문화유산. 풍산 류씨 집성촌의 전통마을.', _pinned:true},
+  {contentid:'_spot_gb_07', contenttypeid:'12', area:'35', si:'11', title:'안동 월영교', addr1:'경상북도 안동시 상아동 569', tel:'054-840-6592', mapx:'128.7100', mapy:'36.5586', overview:'국내 최장 목책 인도교. 야경이 아름다운 안동의 명물.', _pinned:true},
+  {contentid:'_spot_gb_08', contenttypeid:'12', area:'35', si:'11', title:'안동 도산서원', addr1:'경상북도 안동시 도산면 도산서원길 154', tel:'054-856-1073', mapx:'128.8433', mapy:'36.7133', overview:'퇴계 이황이 후학을 기른 조선 성리학의 본산.', _pinned:true},
+  {contentid:'_spot_gb_09', contenttypeid:'12', area:'35', si:'23', title:'포항 호미곶 해맞이광장', addr1:'경상북도 포항시 남구 호미곶면 해맞이로 136', tel:'054-270-5836', mapx:'129.5686', mapy:'36.0761', overview:'한반도에서 해가 가장 먼저 뜨는 곳. 상생의 손 조형물이 유명.', _pinned:true},
+  {contentid:'_spot_gb_10', contenttypeid:'12', area:'35', si:'23', title:'포항 스페이스워크', addr1:'경상북도 포항시 북구 환호공원길 30', tel:'054-270-5859', mapx:'129.3717', mapy:'36.0653', overview:'환호공원의 대형 체험형 조형물. 포스코가 기증.', _pinned:true},
+  {contentid:'_spot_gb_11', contenttypeid:'12', area:'35', si:'14', title:'영주 부석사', addr1:'경상북도 영주시 부석면 부석사로 345', tel:'054-633-3464', mapx:'128.6875', mapy:'36.9975', overview:'유네스코 세계유산 산사. 무량수전이 국보로 지정.', _pinned:true},
+  {contentid:'_spot_gb_12', contenttypeid:'12', area:'35', si:'7', title:'문경새재', addr1:'경상북도 문경시 문경읍 새재로 932', tel:'054-571-0709', mapx:'128.0672', mapy:'36.7597', overview:'조선시대 영남대로의 관문. 사극 촬영장으로 유명.', _pinned:true},
+  {contentid:'_spot_gb_13', contenttypeid:'12', area:'35', si:'17', title:'울릉도', addr1:'경상북도 울릉군 울릉읍', tel:'054-790-6454', mapx:'130.9053', mapy:'37.4844', overview:'동해의 화산섬. 성인봉, 나리분지, 독도 관광의 거점.', _pinned:true},
+  {contentid:'_spot_gb_14', contenttypeid:'12', area:'35', si:'21', title:'주왕산 국립공원', addr1:'경상북도 청송군 주왕산면 공원길 169-7', tel:'054-870-5300', mapx:'129.1583', mapy:'36.3903', overview:'기암과 폭포가 어우러진 명산. 유네스코 세계지질공원.', _pinned:true},
+  {contentid:'_spot_gn_01', contenttypeid:'12', area:'36', si:'14', title:'통영 케이블카', addr1:'경상남도 통영시 발개로 205', tel:'055-649-3804', mapx:'128.4489', mapy:'34.8339', overview:'미륵산 정상까지 오르는 국내 최장급 왕복 케이블카. 한려수도 조망.', _pinned:true},
+  {contentid:'_spot_gn_02', contenttypeid:'12', area:'36', si:'14', title:'통영 동피랑 벽화마을', addr1:'경상남도 통영시 동피랑1길', tel:'055-650-0580', mapx:'128.4272', mapy:'34.8464', overview:'통영항이 내려다보이는 언덕의 벽화마을.', _pinned:true},
+  {contentid:'_spot_gn_03', contenttypeid:'12', area:'36', si:'1', title:'거제 바람의 언덕', addr1:'경상남도 거제시 남부면 갈곶리', tel:'055-639-4127', mapx:'128.6842', mapy:'34.7331', overview:'도장포마을의 초원 언덕. 풍차와 남해 조망으로 유명.', _pinned:true},
+  {contentid:'_spot_gn_04', contenttypeid:'12', area:'36', si:'1', title:'거제 외도 보타니아', addr1:'경상남도 거제시 일운면 외도길 17', tel:'055-681-4541', mapx:'128.7481', mapy:'34.7514', overview:'개인이 조성한 해상 식물원. 이국적 정원이 유명.', _pinned:true},
+  {contentid:'_spot_gn_05', contenttypeid:'12', area:'36', si:'5', title:'남해 독일마을', addr1:'경상남도 남해군 삼동면 독일로 89-7', tel:'055-867-8897', mapx:'127.9536', mapy:'34.8256', overview:'파독 광부·간호사들의 정착촌. 이국적 전원 풍경.', _pinned:true},
+  {contentid:'_spot_gn_06', contenttypeid:'12', area:'36', si:'5', title:'남해 다랭이마을', addr1:'경상남도 남해군 남면 남면로 679번길 21', tel:'055-863-3427', mapx:'127.8794', mapy:'34.7167', overview:'가천 다랭이논으로 유명한 유네스코 세계중요농업유산.', _pinned:true},
+  {contentid:'_spot_gn_07', contenttypeid:'12', area:'36', si:'13', title:'창원 진해군항제(여좌천)', addr1:'경상남도 창원시 진해구 여좌동', tel:'055-225-3691', mapx:'128.7181', mapy:'35.1478', overview:'국내 최대 벚꽃축제 개최지. 여좌천 로망스다리가 명물.', _pinned:true},
+  {contentid:'_spot_gn_08', contenttypeid:'12', area:'36', si:'15', title:'하동 화개장터', addr1:'경상남도 하동군 화개면 쌍계로 15', tel:'055-880-2960', mapx:'127.6497', mapy:'35.1878', overview:'조영남 노래로 유명한 지리산 자락의 5일장.', _pinned:true},
+  {contentid:'_spot_gn_09', contenttypeid:'12', area:'36', si:'11', title:'진주 촉석루·진주성', addr1:'경상남도 진주시 남강로 626', tel:'055-749-2480', mapx:'128.0803', mapy:'35.1889', overview:'남강 위 진주성의 대표 누각. 논개의 의암이 있다.', _pinned:true},
+  {contentid:'_spot_gn_10', contenttypeid:'12', area:'36', si:'18', title:'합천 해인사', addr1:'경상남도 합천군 가야면 해인사길 122', tel:'055-934-3000', mapx:'128.0983', mapy:'35.8014', overview:'유네스코 세계기록유산 팔만대장경을 보관한 법보사찰.', _pinned:true},
+  {contentid:'_spot_gn_11', contenttypeid:'12', area:'36', si:'9', title:'양산 통도사', addr1:'경상남도 양산시 하북면 통도사로 108', tel:'055-382-7182', mapx:'129.0642', mapy:'35.4906', overview:'부처님 진신사리를 모신 불보사찰. 유네스코 세계유산.', _pinned:true},
+  {contentid:'_spot_gn_12', contenttypeid:'12', area:'36', si:'17', title:'함양 상림공원', addr1:'경상남도 함양군 함양읍 필봉산길 49', tel:'055-960-5756', mapx:'127.7175', mapy:'35.5197', overview:'천년 역사의 인공숲. 최치원이 조성한 국내 최고(最古)의 인공림.', _pinned:true},
+  {contentid:'_spot_jb_01', contenttypeid:'12', area:'37', si:'12', title:'전주 한옥마을', addr1:'전라북도 전주시 완산구 기린대로 99', tel:'063-282-1330', mapx:'127.1531', mapy:'35.8175', overview:'700여 채의 한옥이 밀집한 국내 최대 한옥지구.', _pinned:true},
+  {contentid:'_spot_jb_02', contenttypeid:'12', area:'37', si:'12', title:'전주 경기전', addr1:'전라북도 전주시 완산구 태조로 44', tel:'063-281-2790', mapx:'127.1500', mapy:'35.8144', overview:'태조 이성계의 어진을 모신 조선 왕실 사당.', _pinned:true},
+  {contentid:'_spot_jb_03', contenttypeid:'39', area:'37', si:'12', title:'전주 남부시장 콩나물국밥', addr1:'전라북도 전주시 완산구 전동 남부시장', tel:'', mapx:'127.1494', mapy:'35.8103', overview:'전주 대표 향토음식. 남부시장 내 유명 노포 밀집.', _pinned:true},
+  {contentid:'_spot_jb_04', contenttypeid:'39', area:'37', si:'2', title:'군산 이성당 빵집', addr1:'전라북도 군산시 중앙로 177', tel:'063-445-2772', mapx:'126.7192', mapy:'35.9800', overview:'1945년 개업, 국내 현존 가장 오래된 빵집. 단팥빵과 야채빵이 유명.', _pinned:true},
+  {contentid:'_spot_jb_05', contenttypeid:'12', area:'37', si:'2', title:'군산 근대역사박물관·시간여행마을', addr1:'전라북도 군산시 해망로 240', tel:'063-454-7870', mapx:'126.7175', mapy:'35.9853', overview:'일제강점기 근대건축물이 남아있는 군산의 역사거리.', _pinned:true},
+  {contentid:'_spot_jb_06', contenttypeid:'12', area:'37', si:'6', title:'부안 채석강', addr1:'전라북도 부안군 변산면 격포리', tel:'063-580-4934', mapx:'126.4653', mapy:'35.6236', overview:'수만 권의 책을 쌓은 듯한 퇴적층 절벽. 변산반도 국립공원.', _pinned:true},
+  {contentid:'_spot_jb_07', contenttypeid:'12', area:'37', si:'6', title:'부안 내소사', addr1:'전라북도 부안군 진서면 내소사로 243', tel:'063-583-7281', mapx:'126.5844', mapy:'35.6317', overview:'변산반도의 백제시대 고찰. 전나무숲길이 아름답다.', _pinned:true},
+  {contentid:'_spot_jb_08', contenttypeid:'12', area:'37', si:'4', title:'남원 광한루원', addr1:'전라북도 남원시 요천로 1447', tel:'063-620-8901', mapx:'127.3803', mapy:'35.4025', overview:'춘향전의 무대. 삼신산과 오작교가 있는 조선의 대표 정원.', _pinned:true},
+  {contentid:'_spot_jb_09', contenttypeid:'12', area:'37', si:'5', title:'무주 덕유산 국립공원', addr1:'전라북도 무주군 설천면 구천동1로', tel:'063-322-3174', mapx:'127.7472', mapy:'35.8608', overview:'남한 4번째 높은 산. 곤돌라로 향적봉 정상까지 이동 가능.', _pinned:true},
+  {contentid:'_spot_jb_10', contenttypeid:'12', area:'37', si:'14', title:'진안 마이산', addr1:'전라북도 진안군 진안읍 마이산로 130', tel:'063-433-3313', mapx:'127.4231', mapy:'35.7622', overview:'두 개의 말 귀 모양 봉우리. 탑사의 돌탑들이 명물.', _pinned:true},
+  {contentid:'_spot_jn_01', contenttypeid:'12', area:'38', si:'11', title:'순천만 국가정원', addr1:'전라남도 순천시 국가정원1호길 47', tel:'1577-2013', mapx:'127.5017', mapy:'34.9236', overview:'대한민국 제1호 국가정원. 111만m² 규모의 세계정원.', _pinned:true},
+  {contentid:'_spot_jn_02', contenttypeid:'12', area:'38', si:'11', title:'순천만 습지', addr1:'전라남도 순천시 순천만길 513-25', tel:'061-749-6052', mapx:'127.5064', mapy:'34.8878', overview:'세계 5대 연안습지. 갈대밭과 흑두루미가 유명.', _pinned:true},
+  {contentid:'_spot_jn_03', contenttypeid:'12', area:'38', si:'13', title:'여수 해상케이블카', addr1:'전라남도 여수시 오동도로 3', tel:'061-664-7301', mapx:'127.7583', mapy:'34.7439', overview:'자산공원에서 돌산공원까지 해상을 오가는 케이블카.', _pinned:true},
+  {contentid:'_spot_jn_04', contenttypeid:'12', area:'38', si:'13', title:'여수 오동도', addr1:'전라남도 여수시 오동도로 222', tel:'061-659-1819', mapx:'127.7622', mapy:'34.7472', overview:'동백꽃과 시누대숲으로 유명한 여수의 대표 섬.', _pinned:true},
+  {contentid:'_spot_jn_05', contenttypeid:'12', area:'38', si:'13', title:'여수 향일암', addr1:'전라남도 여수시 돌산읍 향일암로 60', tel:'061-644-4742', mapx:'127.8322', mapy:'34.5911', overview:'남해 일출 명소. 돌산도 절벽 위의 관음성지.', _pinned:true},
+  {contentid:'_spot_jn_06', contenttypeid:'12', area:'38', si:'7', title:'담양 죽녹원', addr1:'전라남도 담양군 담양읍 죽녹원로 119', tel:'061-380-2680', mapx:'126.9878', mapy:'35.3272', overview:'31만m² 규모의 대나무 정원. 청량한 대숲길이 유명.', _pinned:true},
+  {contentid:'_spot_jn_07', contenttypeid:'12', area:'38', si:'7', title:'담양 메타세쿼이아 가로수길', addr1:'전라남도 담양군 담양읍 메타세쿼이아로', tel:'061-380-3149', mapx:'126.9908', mapy:'35.3358', overview:'한국의 아름다운 길 100선. 8.5km 메타세쿼이아 명물길.', _pinned:true},
+  {contentid:'_spot_jn_08', contenttypeid:'12', area:'38', si:'10', title:'보성 녹차밭(대한다원)', addr1:'전라남도 보성군 보성읍 녹차로 763-65', tel:'061-852-4540', mapx:'127.0714', mapy:'34.7539', overview:'국내 최대 녹차밭. 삼나무길과 계단식 차밭의 절경.', _pinned:true},
+  {contentid:'_spot_jn_09', contenttypeid:'12', area:'38', si:'8', title:'목포 유달산·해상케이블카', addr1:'전라남도 목포시 노적봉길 34', tel:'061-247-2210', mapx:'126.3833', mapy:'34.7833', overview:'목포 8경의 으뜸. 3.23km 국내 최장 해상 케이블카.', _pinned:true},
+  {contentid:'_spot_jn_10', contenttypeid:'12', area:'38', si:'11', title:'순천 낙안읍성', addr1:'전라남도 순천시 낙안면 충민길 30', tel:'061-749-8831', mapx:'127.3486', mapy:'34.9061', overview:'조선시대 계획된 지방 도시. 초가지붕 민속마을 그대로.', _pinned:true},
+  {contentid:'_spot_jn_11', contenttypeid:'12', area:'38', si:'21', title:'해남 땅끝마을', addr1:'전라남도 해남군 송지면 땅끝마을길', tel:'061-530-5541', mapx:'126.5183', mapy:'34.3025', overview:'한반도 최남단. 땅끝탑과 모노레일 전망대.', _pinned:true},
+  {contentid:'_spot_jn_12', contenttypeid:'12', area:'38', si:'5', title:'구례 화엄사', addr1:'전라남도 구례군 마산면 화엄사로 539', tel:'061-783-7600', mapx:'127.4844', mapy:'35.2733', overview:'유네스코 세계유산 산사. 각황전과 홍매화가 유명.', _pinned:true},
+  {contentid:'_spot_jn_13', contenttypeid:'12', area:'38', si:'19', title:'진도 신비의 바닷길', addr1:'전라남도 진도군 고군면 회동리', tel:'061-544-0151', mapx:'126.3733', mapy:'34.4308', overview:'2.8km 바닷길이 갈라지는 모세의 기적. 3~4월이 절정.', _pinned:true},
+  {contentid:'_spot_jn_14', contenttypeid:'12', area:'38', si:'16', title:'완도 청산도', addr1:'전라남도 완도군 청산면', tel:'061-550-6800', mapx:'126.8892', mapy:'34.1725', overview:'슬로시티 1호. 서편제 촬영지로 유명한 남해의 섬.', _pinned:true},
+  {contentid:'_spot_jj_01', contenttypeid:'12', area:'39', si:'2', title:'성산일출봉', addr1:'제주특별자치도 서귀포시 성산읍 성산리', tel:'064-783-0959', mapx:'126.9425', mapy:'33.4586', overview:'유네스코 세계자연유산. 화산 분화구가 그대로 남아있는 명소.', _pinned:true},
+  {contentid:'_spot_jj_02', contenttypeid:'12', area:'39', si:'1', title:'한라산 국립공원', addr1:'제주특별자치도 제주시 1100로 2070-61', tel:'064-713-9950', mapx:'126.5306', mapy:'33.3617', overview:'남한 최고봉 1947m. 유네스코 세계자연유산.', _pinned:true},
+  {contentid:'_spot_jj_03', contenttypeid:'12', area:'39', si:'1', title:'협재해수욕장', addr1:'제주특별자치도 제주시 한림읍 협재리', tel:'064-796-2404', mapx:'126.2394', mapy:'33.3944', overview:'에메랄드빛 바다와 비양도 조망으로 유명한 제주 대표 해변.', _pinned:true},
+  {contentid:'_spot_jj_04', contenttypeid:'12', area:'39', si:'1', title:'우도', addr1:'제주특별자치도 제주시 우도면', tel:'064-728-4394', mapx:'126.9542', mapy:'33.5061', overview:'제주 대표 부속섬. 산호해수욕장과 우도땅콩아이스크림이 유명.', _pinned:true},
+  {contentid:'_spot_jj_05', contenttypeid:'12', area:'39', si:'1', title:'만장굴', addr1:'제주특별자치도 제주시 구좌읍 만장굴길 182', tel:'064-710-7903', mapx:'126.7708', mapy:'33.5286', overview:'세계 최장급 용암동굴. 유네스코 세계자연유산.', _pinned:true},
+  {contentid:'_spot_jj_06', contenttypeid:'12', area:'39', si:'2', title:'중문 주상절리대', addr1:'제주특별자치도 서귀포시 이어도로 36-30', tel:'064-738-1521', mapx:'126.4192', mapy:'33.2378', overview:'용암이 식으면서 만들어진 육각기둥 절벽. 천연기념물.', _pinned:true},
+  {contentid:'_spot_jj_07', contenttypeid:'12', area:'39', si:'2', title:'서귀포 천지연폭포', addr1:'제주특별자치도 서귀포시 천지동 667-7', tel:'064-733-1528', mapx:'126.5581', mapy:'33.2461', overview:'제주 3대 폭포. 높이 22m, 아열대 식물과 어우러진 절경.', _pinned:true},
+  {contentid:'_spot_jj_08', contenttypeid:'12', area:'39', si:'2', title:'섭지코지', addr1:'제주특별자치도 서귀포시 성산읍 섭지코지로', tel:'064-782-2810', mapx:'126.9297', mapy:'33.4239', overview:'유채꽃과 성산일출봉 조망이 어우러진 해안 명소.', _pinned:true},
+  {contentid:'_spot_jj_09', contenttypeid:'12', area:'39', si:'1', title:'제주 사려니숲길', addr1:'제주특별자치도 제주시 조천읍 교래리', tel:'064-900-8800', mapx:'126.6906', mapy:'33.4272', overview:'삼나무와 편백이 우거진 제주 대표 힐링 숲길.', _pinned:true},
+  {contentid:'_spot_jj_10', contenttypeid:'14', area:'39', si:'2', title:'아르떼뮤지엄 제주', addr1:'제주특별자치도 서귀포시 애월읍 어림비로 478', tel:'1899-5008', mapx:'126.3067', mapy:'33.3789', overview:'몰입형 미디어아트 전시관. 옛 스피커 공장을 리모델링.', _pinned:true},
+  {contentid:'_spot_jj_11', contenttypeid:'39', area:'39', si:'2', title:'서귀포 올레시장', addr1:'제주특별자치도 서귀포시 중정로 73번길 18', tel:'064-762-1949', mapx:'126.5636', mapy:'33.2489', overview:'제주 대표 전통시장. 흑돼지, 오메기떡, 감귤이 유명.', _pinned:true},
+  // ===== 대전 (area:3) 대표 관광·둘레길 =====
+  {contentid:'_trail_dj_01',contenttypeid:'trail',area:'3',si:'4',title:'계족산 황톳길',addr1:'대전광역시 대덕구 장동 계족산 자락',tel:'042-608-6398',mapx:'127.4487',mapy:'36.3897',overview:'대전 계족산 자락 14.5km 황토 맨발 걷기길로, 대전 대표 트레킹 명소이다.',_pinned:true},
+  {contentid:'_trail_dj_02',contenttypeid:'trail',area:'3',si:'4',title:'한밭수목원 산책로',addr1:'대전광역시 서구 둔산대로 169 한밭수목원',tel:'042-270-8452',mapx:'127.3878',mapy:'36.3702',overview:'대전 도심 속 국내 최대 인공수목원 산책 코스로 사계절 다양한 식물을 감상할 수 있다.',_pinned:true},
+  // ===== 대구 (area:4) 대표 관광·둘레길 =====
+  {contentid:'_trail_dg_01',contenttypeid:'trail',area:'4',si:'4',title:'앞산 자락길',addr1:'대구광역시 남구 대명동 앞산공원',tel:'053-664-2000',mapx:'128.5762',mapy:'35.8244',overview:'대구 앞산 자락을 따라 조성된 순환 산책로로 도심 조망과 숲길이 어우러진다.',_pinned:true},
+  {contentid:'_trail_dg_02',contenttypeid:'trail',area:'4',si:'4',title:'팔공산 올레길',addr1:'대구광역시 동구 팔공산로 일원',tel:'053-662-4471',mapx:'128.6944',mapy:'35.9970',overview:'팔공산 자락을 따라 조성된 8개 코스 올레길로 대구 대표 트레킹 명소이다.',_pinned:true},
+  // ===== 광주 (area:5) 대표 관광·둘레길 =====
+  {contentid:'_trail_gj_01',contenttypeid:'trail',area:'5',si:'4',title:'무등산 옛길',addr1:'광주광역시 북구 무등로 1514',tel:'062-266-5586',mapx:'126.9985',mapy:'35.1348',overview:'무등산 국립공원 옛길 코스로 원효사에서 서석대까지 이어지는 광주 대표 산길이다.',_pinned:true},
+  {contentid:'_trail_gj_02',contenttypeid:'trail',area:'5',si:'4',title:'광주호 호수생태원',addr1:'광주광역시 북구 충효샘길 7',tel:'062-613-6841',mapx:'126.9963',mapy:'35.2103',overview:'광주호 수변을 따라 조성된 생태 산책로로 시민 힐링 명소이다.',_pinned:true},
+  // ===== 울산 (area:7) 대표 관광·둘레길 =====
+  {contentid:'_trail_us_01',contenttypeid:'trail',area:'7',si:'4',title:'영남알프스 신불산 억새길',addr1:'울산광역시 울주군 상북면 등억리',tel:'052-204-1900',mapx:'129.0187',mapy:'35.5595',overview:'영남알프스 신불산~간월재 능선의 광활한 억새 트레킹 코스이다.',_pinned:true},
+  {contentid:'_trail_us_02',contenttypeid:'trail',area:'7',si:'2',title:'대왕암공원 해안산책로',addr1:'울산광역시 동구 일산동 대왕암공원',tel:'052-209-3738',mapx:'129.4370',mapy:'35.4890',overview:'울산 동해안 대왕암공원의 기암괴석과 소나무 숲을 감상하는 해안 산책로이다.',_pinned:true},
+  // ===== 세종 (area:8) 대표 관광·둘레길 =====
+  {contentid:'_trail_sj_01',contenttypeid:'trail',area:'8',si:'1',title:'세종호수공원 순환 산책로',addr1:'세종특별자치시 연기면 세종호수공원',tel:'044-300-5000',mapx:'127.2891',mapy:'36.5040',overview:'세종시 중심에 위치한 국내 최대 인공호수 세종호수공원의 순환 산책·자전거 코스이다.',_pinned:true},
+  {contentid:'_trail_sj_02',contenttypeid:'trail',area:'8',si:'1',title:'베어트리파크 산책길',addr1:'세종특별자치시 전동면 신송로 217',tel:'044-866-7766',mapx:'127.3350',mapy:'36.6690',overview:'세종 베어트리파크 내 수목원 산책 코스로 곰과 사슴 관람도 겸할 수 있다.',_pinned:true},
+  // ===== 서울 =====
+  {contentid:'_trail_seoul_01',contenttypeid:'trail',area:'1',si:'22',title:'북한산둘레길 1구간 (솔밭근린공원길)',addr1:'서울특별시 은평구 진관동 67',tel:'02-357-9688',mapx:'126.9330',mapy:'37.6365',overview:'북한산 자락을 완만하게 걷는 저지대 수평 산책로 21개 구간(71.8km) 중 첫 번째 구간이다. 은평구 진관동 북한산성 탐방지원센터를 시작점으로, 울창한 소나무 숲과 계곡을 따라 걷는 힐링 코스다.',_pinned:true},
+  {contentid:'_trail_seoul_02',contenttypeid:'trail',area:'1',si:'3',title:'북한산둘레길 2구간 (순례길)',addr1:'서울특별시 강북구 우이동 269',tel:'02-909-0497',mapx:'127.0130',mapy:'37.6530',overview:'강북구 우이동 우이령 입구 일대를 지나는 북한산둘레길 2구간으로 불교 성지와 연계된 순례 문화를 엿볼 수 있다.',_pinned:true},
+  {contentid:'_trail_seoul_03',contenttypeid:'trail',area:'1',si:'17',title:'북한산둘레길 3구간 (흰구름길)',addr1:'서울특별시 성북구 정릉동 산87-1',tel:'02-909-0497',mapx:'127.0030',mapy:'37.6185',overview:'정릉 탐방지원센터 인근에서 출발하는 북한산둘레길 3구간으로, 탁 트인 전망과 능선을 따라 흰 구름 사이를 걷는 듯한 경치를 자랑한다.',_pinned:true},
+  {contentid:'_trail_seoul_04',contenttypeid:'trail',area:'1',si:'22',title:'서울둘레길 17코스 (북한산 은평)',addr1:'서울특별시 은평구 진관동 산3-1',tel:'02-2133-1604',mapx:'126.9397',mapy:'37.6417',overview:'서울둘레길(총 157km, 21코스) 중 은평구 구간으로, 진관내동에서 구파발역 방향으로 이어지는 코스다.',_pinned:true},
+  {contentid:'_trail_seoul_05',contenttypeid:'trail',area:'1',si:'3',title:'서울둘레길 20코스 (북한산 강북)',addr1:'서울특별시 강북구 우이동 199',tel:'02-2133-1604',mapx:'127.0172',mapy:'37.6615',overview:'서울둘레길 20코스로 강북구 우이동~쌍문동을 잇는 북한산 외곽 숲길이다.',_pinned:true},
+  {contentid:'_trail_seoul_06',contenttypeid:'trail',area:'1',si:'10',title:'서울둘레길 21코스 (북한산 도봉)',addr1:'서울특별시 도봉구 도봉동 665',tel:'02-2133-1604',mapx:'127.0232',mapy:'37.6847',overview:'서울둘레길 21코스로 도봉구 도봉산 자락을 따라 걷는 코스다.',_pinned:true},
+  {contentid:'_trail_seoul_07',contenttypeid:'trail',area:'1',si:'20',title:'한강 여의도공원 산책길',addr1:'서울특별시 영등포구 여의공원로 68',tel:'02-761-4079',mapx:'126.9243',mapy:'37.5265',overview:'서울 한강변을 따라 조성된 여의도한강공원 및 여의도공원 일대의 산책·자전거길이다.',_pinned:true},
+  {contentid:'_trail_seoul_08',contenttypeid:'trail',area:'1',si:'16',title:'한강 뚝섬한강공원 산책길',addr1:'서울특별시 성동구 뚝섬로 273',tel:'02-450-1234',mapx:'127.0611',mapy:'37.5272',overview:'성동구 뚝섬 한강변을 따라 조성된 산책 및 자전거 코스다.',_pinned:true},
+  {contentid:'_trail_seoul_09',contenttypeid:'trail',area:'1',si:'6',title:'한강 광나루한강공원 산책길',addr1:'서울특별시 광진구 천호대로 강변공원',tel:'02-450-1234',mapx:'127.1101',mapy:'37.5434',overview:'광진구 아차산 아래 광나루 한강변을 걷는 산책로다.',_pinned:true},
+  {contentid:'_trail_seoul_10',contenttypeid:'trail',area:'1',si:'15',title:'한강 잠원·반포한강공원 산책길',addr1:'서울특별시 서초구 신반포로11길 반포한강공원',tel:'02-2631-0843',mapx:'126.9995',mapy:'37.5107',overview:'서초구 반포한강공원 일대 수변 산책길로, 세빛섬과 반포대교 달빛무지개분수가 명물이다.',_pinned:true},
+  // ===== 인천 =====
+  {contentid:'_trail_incheon_01',contenttypeid:'trail',area:'2',si:'1',title:'강화나들길 1코스 (심도역사문화길)',addr1:'인천광역시 강화군 강화읍 갑곳리 1017',tel:'032-930-3515',mapx:'126.4958',mapy:'37.7428',overview:'강화도 외성과 내성을 따라 걷는 나들길 1코스로, 강화갑곶돈대에서 시작된다. 고인돌과 성벽, 역사 유적지를 따라 걸으며 강화도 2,000년 역사를 체험할 수 있다.',_pinned:true},
+  // ===== 부산 =====
+  {contentid:'_trail_busan_01',contenttypeid:'trail',area:'6',si:'3',title:'갈맷길 1-1구간 (임랑해수욕장~기장군청)',addr1:'부산광역시 기장군 장안읍 임랑리 임랑해수욕장',tel:'051-709-4082',mapx:'129.2543',mapy:'35.3545',overview:'부산 갈맷길(278km, 9코스) 출발 구간으로 임랑해수욕장에서 기장군청까지 11.5km를 걷는다.',_pinned:true},
+  {contentid:'_trail_busan_02',contenttypeid:'trail',area:'6',si:'3',title:'갈맷길 1-2구간 (기장군청~송정해수욕장)',addr1:'부산광역시 기장군 기장읍 기장대로 560 기장군청',tel:'051-709-4082',mapx:'129.2227',mapy:'35.2447',overview:'기장군청에서 해동용궁사를 거쳐 송정해수욕장까지 16km를 걷는 갈맷길 코스다.',_pinned:true},
+  {contentid:'_trail_busan_03',contenttypeid:'trail',area:'6',si:'16',title:'갈맷길 2-1구간 (문탠로드~민락교)',addr1:'부산광역시 해운대구 달맞이길 62번길 해운대 문탠로드 입구',tel:'051-749-4000',mapx:'129.1741',mapy:'35.1599',overview:'해운대구 문탠로드에서 민락교까지 5.7km를 걷는 갈맷길 2-1구간이다. 달맞이언덕 소나무 숲길과 해운대해수욕장, APEC 누리마루를 지나는 부산 최고의 해안 산책로다.',_pinned:true},
+  {contentid:'_trail_busan_04',contenttypeid:'trail',area:'6',si:'12',title:'갈맷길 2-2구간 (민락교~오륙도)',addr1:'부산광역시 수영구 민락동 민락교 광장',tel:'051-610-4062',mapx:'129.1272',mapy:'35.1548',overview:'수영구 민락교에서 남구 오륙도 유람선 선착장까지 12.6km 해안 코스다.',_pinned:true},
+  {contentid:'_trail_busan_05',contenttypeid:'trail',area:'6',si:'4',title:'갈맷길 3-1구간 (오륙도~몰운대)',addr1:'부산광역시 남구 용호동 936-1 오륙도해맞이공원',tel:'051-607-6395',mapx:'129.1279',mapy:'35.1043',overview:'해파랑길·남파랑길 시작점인 오륙도해맞이공원에서 출발하는 갈맷길 3-1구간이다.',_pinned:true},
+  {contentid:'_trail_busan_06',contenttypeid:'trail',area:'6',si:'4',title:'이기대 해안산책로',addr1:'부산광역시 남구 이기대공원로 월드컵대로',tel:'051-607-6395',mapx:'129.1197',mapy:'35.1010',overview:'부산 남구 이기대공원 해안을 따라 조성된 4.7km 해안산책로다. 파도가 깎아낸 기암절벽과 광안대교 야경이 아름다운 명소다.',_pinned:true},
+  {contentid:'_trail_busan_07',contenttypeid:'trail',area:'6',si:'10',title:'갈맷길 4-1구간 (사하구 해안)',addr1:'부산광역시 사하구 다대동 산220 몰운대',tel:'051-220-4083',mapx:'128.9640',mapy:'35.0447',overview:'사하구 몰운대에서 을숙도 일원을 연결하는 갈맷길 4-1구간이다.',_pinned:true},
+  // ===== 경기 =====
+  {contentid:'_trail_gg_01',contenttypeid:'trail',area:'31',si:'8',title:'경기둘레길 1코스 (김포 대명항)',addr1:'경기도 김포시 대곶면 대명리 517-4 대명항',tel:'031-980-5108',mapx:'126.5578',mapy:'37.6847',overview:'경기둘레길(860km, 60코스) 시작점으로 김포 대명항에서 문수산성 남문까지 이어진다.',_pinned:true},
+  {contentid:'_trail_gg_02',contenttypeid:'trail',area:'31',si:'5',title:'남한산성 둘레길',addr1:'경기도 광주시 남한산성면 남한산성로 784-1',tel:'031-743-6610',mapx:'127.1784',mapy:'37.4798',overview:'유네스코 세계문화유산 남한산성 성벽을 따라 걷는 둘레길로 총 길이 약 9km다.',_pinned:true},
+  {contentid:'_trail_gg_03',contenttypeid:'trail',area:'31',si:'7',title:'수리산 둘레길',addr1:'경기도 군포시 산본동 1151 수리산도립공원 안내소',tel:'031-390-5880',mapx:'126.9350',mapy:'37.3620',overview:'경기도 군포·안양·시흥·안산에 걸친 수리산 외곽을 따라 조성된 둘레길이다.',_pinned:true},
+  {contentid:'_trail_gg_04',contenttypeid:'trail',area:'31',si:'13',title:'광교산 트레킹 (광교산 입구)',addr1:'경기도 수원시 장안구 하광교동 광교산 입구',tel:'031-228-2871',mapx:'127.0275',mapy:'37.3264',overview:'경기 100대 명산인 광교산(582m) 수원 하광교 코스 입구다.',_pinned:true},
+  {contentid:'_trail_gg_05',contenttypeid:'trail',area:'31',si:'19',title:'아리바우길 (경기 양평 출발)',addr1:'경기도 양평군 양평읍 양평역 광장',tel:'033-660-2114',mapx:'127.4928',mapy:'37.4895',overview:'경기 양평에서 강원 강릉까지 8개 구간 105km를 잇는 장거리 트레킹 코스다.',_pinned:true},
+  // ===== 강원 =====
+  {contentid:'_trail_gw_01',contenttypeid:'trail',area:'32',si:'1',title:'강릉 바우길 1구간 (선자령 풍차길)',addr1:'강원특별자치도 강릉시 성산면 어흘리 산2-1 대관령 신재생에너지 전시관',tel:'033-645-0990',mapx:'128.7417',mapy:'37.7124',overview:'강릉 바우길(약 400km, 17구간) 첫 코스로 선자령 정상(1,157m)까지 풍력발전기와 탁 트인 초원 능선을 따라 걷는 12km 코스다.',_pinned:true},
+  {contentid:'_trail_gw_02',contenttypeid:'trail',area:'32',si:'1',title:'강릉 바우길 8구간 (산우에 바닷길)',addr1:'강원특별자치도 강릉시 강동면 안인진길 34-22',tel:'033-645-0990',mapx:'129.0834',mapy:'37.7243',overview:'정동진과 강동면 해안을 따라 걷는 강릉 바우길 8구간이다.',_pinned:true},
+  {contentid:'_trail_gw_03',contenttypeid:'trail',area:'32',si:'1',title:'해파랑길 41코스 (강릉 주문진)',addr1:'강원특별자치도 강릉시 주문진읍 주문진해수욕장',tel:'033-660-2114',mapx:'128.8230',mapy:'37.8983',overview:'동해안 해파랑길 강릉 구간으로 주문진해수욕장에서 양양 죽도정 입구까지 12.2km를 걷는다.',_pinned:true},
+  {contentid:'_trail_gw_04',contenttypeid:'trail',area:'32',si:'15',title:'평창 올림픽 트레일',addr1:'강원특별자치도 평창군 대관령면 올림픽로 715 알펜시아 리조트',tel:'033-330-6000',mapx:'128.6728',mapy:'37.6548',overview:'2018 평창 동계올림픽 개최지 일원을 걷는 트레일로 알펜시아와 휘닉스파크를 잇는다.',_pinned:true},
+  {contentid:'_trail_gw_05',contenttypeid:'trail',area:'32',si:'5',title:'속초 설악산 둘레길 (외설악 탐방로)',addr1:'강원특별자치도 속초시 설악산로 1091 설악산 소공원',tel:'033-801-0900',mapx:'128.4681',mapy:'38.1034',overview:'설악산 국립공원 소공원에서 출발하는 외설악 탐방 코스다.',_pinned:true},
+  {contentid:'_trail_gw_06',contenttypeid:'trail',area:'32',si:'3',title:'동해 무릉계곡 트레킹',addr1:'강원특별자치도 동해시 삼화로 584 무릉계곡 입구',tel:'033-539-3700',mapx:'129.0543',mapy:'37.5138',overview:'국가지질공원으로 지정된 무릉계곡을 따라 걷는 트레킹 코스다.',_pinned:true},
+  {contentid:'_trail_gw_07',contenttypeid:'trail',area:'32',si:'4',title:'삼척 해파랑길 27코스',addr1:'강원특별자치도 삼척시 근덕면 덕산해수욕장',tel:'033-570-3545',mapx:'129.2047',mapy:'37.4042',overview:'삼척 해안을 따라 걷는 해파랑길 27코스로, 덕산해수욕장에서 장호항까지 이어진다.',_pinned:true},
+  // ===== 충북 =====
+  {contentid:'_trail_cb_01',contenttypeid:'trail',area:'33',si:'1',title:'괴산 산막이옛길',addr1:'충청북도 괴산군 칠성면 사은리 546-1',tel:'043-832-3527',mapx:'127.8567',mapy:'36.8072',overview:'괴산호 물가를 따라 조성된 4km 옛길로 봄 벚꽃과 가을 단풍이 아름다운 명소다.',_pinned:true},
+  {contentid:'_trail_cb_02',contenttypeid:'trail',area:'33',si:'2',title:'단양 소백산 철쭉트레킹',addr1:'충청북도 단양군 가곡면 어의곡리 소백산 국립공원 어의곡 탐방지원센터',tel:'043-423-0708',mapx:'128.4932',mapy:'37.0018',overview:'소백산 천상의 화원으로 불리는 비로봉 철쭉평원으로 오르는 대표 코스다.',_pinned:true},
+  {contentid:'_trail_cb_03',contenttypeid:'trail',area:'33',si:'11',title:'충주호 레이크워크 (충주댐 순환길)',addr1:'충청북도 충주시 동량면 충주호수로 2216 충주댐 전망대',tel:'043-854-0016',mapx:'127.9427',mapy:'37.0098',overview:'충주호 수변을 따라 조성된 산책 및 트레킹 코스다.',_pinned:true},
+  // ===== 충남 =====
+  {contentid:'_trail_cn_01',contenttypeid:'trail',area:'34',si:'11',title:'내포문화숲길',addr1:'충청남도 예산군 덕산면 가야산로 401',tel:'041-338-0773',mapx:'126.6490',mapy:'36.7200',overview:'충남 가야산을 중심으로 서산·당진·홍성·예산 4개 시군을 잇는 총 300km 내포 순례길이다.',_pinned:true},
+  {contentid:'_trail_cn_02',contenttypeid:'trail',area:'34',si:'6',title:'보령 해안 트레킹 (대천해수욕장)',addr1:'충청남도 보령시 신흑동 1153-1 대천해수욕장',tel:'041-930-3515',mapx:'126.5492',mapy:'36.3187',overview:'서해안 머드축제로 유명한 보령 대천해수욕장 일원의 해안 산책로다.',_pinned:true},
+  {contentid:'_trail_cn_03',contenttypeid:'trail',area:'34',si:'14',title:'태안 해변길 (바람아래길)',addr1:'충청남도 태안군 소원면 의항리 태안해안국립공원 탐방안내소',tel:'041-672-9737',mapx:'126.1887',mapy:'36.8021',overview:'태안해안국립공원을 따라 조성된 해변길 중 바람아래길 코스다.',_pinned:true},
+  // ===== 경북 =====
+  {contentid:'_trail_gb_01',contenttypeid:'trail',area:'35',si:'20',title:'주왕산 주방천 폭포 트레킹',addr1:'경상북도 청송군 주왕산면 공원길 169-7',tel:'054-870-5300',mapx:'129.1682',mapy:'36.3941',overview:'기암단애로 유명한 주왕산 국립공원의 대표 코스로, 대전사에서 용추폭포까지 주방천 계곡을 따라 6.8km를 걷는다.',_pinned:true},
+  {contentid:'_trail_gb_02',contenttypeid:'trail',area:'35',si:'2',title:'경주 남산 탐방로',addr1:'경상북도 경주시 내남면 노곡리 경주 남산 삼릉계곡 입구',tel:'054-778-4347',mapx:'129.2071',mapy:'35.8173',overview:'신라의 야외 박물관으로 불리는 경주 남산을 탐방하는 코스다.',_pinned:true},
+  {contentid:'_trail_gb_03',contenttypeid:'trail',area:'35',si:'16',title:'울릉도 내수전~석포 탐방로',addr1:'경상북도 울릉군 울릉읍 내수전길 일원',tel:'054-790-6393',mapx:'130.9073',mapy:'37.5130',overview:'울릉도 일주도로 미개통 구간인 내수전에서 석포까지 3.4km 산길 트레킹이다.',_pinned:true},
+  {contentid:'_trail_gb_04',contenttypeid:'trail',area:'35',si:'10',title:'안동 하회마을 산책길',addr1:'경상북도 안동시 풍천면 전서로 186 하회마을',tel:'054-854-3669',mapx:'128.5190',mapy:'36.5387',overview:'유네스코 세계문화유산 하회마을 일원의 산책 코스다.',_pinned:true},
+  {contentid:'_trail_gb_05',contenttypeid:'trail',area:'35',si:'6',title:'문경 새재 옛길',addr1:'경상북도 문경시 문경읍 새재로 932 조령 1관문',tel:'054-550-6395',mapx:'128.0737',mapy:'36.7895',overview:'조선시대 영남에서 한양으로 가는 주요 교역로였던 문경새재 옛길이다.',_pinned:true},
+  // ===== 경남 =====
+  {contentid:'_trail_gn_01',contenttypeid:'trail',area:'36',si:'5',title:'남해 바래길 1코스 (다랭이지겟길)',addr1:'경상남도 남해군 남면 평산리 평산항',tel:'055-860-8601',mapx:'127.8970',mapy:'34.8410',overview:'남해 바래길(263km, 16개 코스) 1코스로 평산항에서 가천 다랭이마을까지 16km를 걷는다.',_pinned:true},
+  {contentid:'_trail_gn_02',contenttypeid:'trail',area:'36',si:'1',title:'거제 지심도 트레킹',addr1:'경상남도 거제시 일운면 지심도길 56-12',tel:'055-681-6007',mapx:'128.7157',mapy:'34.8792',overview:'동백나무 숲이 섬 전체를 뒤덮은 거제 지심도의 순환 트레킹 코스다.',_pinned:true},
+  {contentid:'_trail_gn_03',contenttypeid:'trail',area:'36',si:'14',title:'통영 한려수도 조망길',addr1:'경상남도 통영시 발개로 205 통영 케이블카 하부 승강장',tel:'055-649-3804',mapx:'128.4272',mapy:'34.8501',overview:'통영 미륵산(461m) 정상에서 한려해상국립공원 다도해 절경을 조망하는 코스다.',_pinned:true},
+  {contentid:'_trail_gn_04',contenttypeid:'trail',area:'36',si:'15',title:'지리산둘레길 하동 구간 (화개~삼신)',addr1:'경상남도 하동군 화개면 탑리 화개장터',tel:'055-884-0854',mapx:'127.7020',mapy:'35.1808',overview:'지리산둘레길(295km) 하동 구간 시작점인 화개장터에서 출발하는 코스다.',_pinned:true},
+  // ===== 전북 =====
+  {contentid:'_trail_jb_01',contenttypeid:'trail',area:'37',si:'4',title:'지리산둘레길 남원 구간 (주천~운봉)',addr1:'전북특별자치도 남원시 주천면 주천리 지리산둘레길 주천 안내센터',tel:'063-635-0850',mapx:'127.5032',mapy:'35.4612',overview:'지리산둘레길 전북 남원 구간으로 주천에서 운봉까지 14.7km를 걷는다.',_pinned:true},
+  {contentid:'_trail_jb_02',contenttypeid:'trail',area:'37',si:'14',title:'마이산 탑사길',addr1:'전북특별자치도 진안군 마령면 마이산남로 367 마이산 탑사',tel:'063-433-0012',mapx:'127.4175',mapy:'35.7281',overview:'전북 진안 마이산 도립공원 내 탑사까지 이어지는 탐방로다.',_pinned:true},
+  {contentid:'_trail_jb_03',contenttypeid:'trail',area:'37',si:'6',title:'변산반도 산책길 (채석강)',addr1:'전북특별자치도 부안군 변산면 격포리 301-1 채석강',tel:'063-580-4870',mapx:'126.4980',mapy:'35.6142',overview:'국립공원 변산반도 채석강에서 적벽강까지 이어지는 해안 탐방로다.',_pinned:true},
+  // ===== 전남 =====
+  {contentid:'_trail_jn_01',contenttypeid:'trail',area:'38',si:'13',title:'남파랑길 전남 구간 (여수)',addr1:'전라남도 여수시 돌산읍 돌산로 3620 향일암 입구',tel:'061-659-3804',mapx:'127.7921',mapy:'34.6720',overview:'남파랑길(1,470km) 전남 여수 구간으로, 일출 명소인 향일암에서 출발한다.',_pinned:true},
+  {contentid:'_trail_jn_02',contenttypeid:'trail',area:'38',si:'11',title:'순천만 갈대밭 탐방로',addr1:'전라남도 순천시 순천만길 513-25 순천만습지',tel:'1577-2013',mapx:'127.5053',mapy:'34.8897',overview:'람사르 국제 습지로 지정된 순천만 갈대밭을 탐방하는 코스다.',_pinned:true},
+  {contentid:'_trail_jn_03',contenttypeid:'trail',area:'38',si:'7',title:'담양 메타세쿼이아 가로수길',addr1:'전라남도 담양군 담양읍 메타세쿼이아로 12',tel:'061-380-3149',mapx:'126.9886',mapy:'35.3393',overview:'1972년 조성된 2.1km 메타세쿼이아 산책로로 한국의 아름다운 길 100선 대상을 수상했다.',_pinned:true},
+  {contentid:'_trail_jn_04',contenttypeid:'trail',area:'38',si:'5',title:'구례 지리산둘레길 (서시천~오미)',addr1:'전라남도 구례군 토지면 오미리 지리산 둘레길 안내소',tel:'061-781-0850',mapx:'127.6423',mapy:'35.2072',overview:'지리산둘레길 전남 구례 구간으로 서시천에서 오미마을까지 이어진다.',_pinned:true},
+  {contentid:'_trail_jn_05',contenttypeid:'trail',area:'38',si:'21',title:'해남 땅끝 트레킹',addr1:'전라남도 해남군 송지면 갈두리 57 땅끝 탐방안내소',tel:'061-535-0997',mapx:'126.5318',mapy:'34.2875',overview:'한반도 최남단 해남 땅끝마을에서 출발하는 트레킹 코스다.',_pinned:true},
+  {contentid:'_trail_jn_06',contenttypeid:'trail',area:'38',si:'2',title:'고흥 남파랑길 (발포항)',addr1:'전라남도 고흥군 도화면 발포리 발포항',tel:'061-830-5451',mapx:'127.3527',mapy:'34.6098',overview:'남파랑길 고흥 구간 탐방 기점인 발포항 일원의 해안 걷기 코스다.',_pinned:true},
+  {contentid:'_trail_jn_07',contenttypeid:'trail',area:'38',si:'10',title:'보성 녹차밭 산책길',addr1:'전라남도 보성군 보성읍 녹차로 775 대한다원',tel:'061-852-4540',mapx:'127.0830',mapy:'35.0047',overview:'전국 최대 차 생산지 보성 대한다원의 녹차밭 사이를 걷는 산책 코스다.',_pinned:true},
+  // ===== 제주 =====
+  {contentid:'_trail_jeju_01',contenttypeid:'trail',area:'39',si:'2',title:'제주올레 1코스 (시흥~광치기)',addr1:'제주특별자치도 서귀포시 성산읍 시흥리 시흥초등학교 앞',tel:'064-762-2190',mapx:'126.9352',mapy:'33.4623',overview:'제주올레(437km, 26코스) 시작점으로 시흥초등학교에서 광치기해변까지 15.1km를 걷는다.',_pinned:true},
+  {contentid:'_trail_jeju_02',contenttypeid:'trail',area:'39',si:'2',title:'제주올레 2코스 (광치기~온평)',addr1:'제주특별자치도 서귀포시 성산읍 고성리 광치기해변',tel:'064-762-2190',mapx:'126.9341',mapy:'33.4555',overview:'광치기해변에서 온평포구까지 15.6km를 걷는 제주올레 2코스다.',_pinned:true},
+  {contentid:'_trail_jeju_03',contenttypeid:'trail',area:'39',si:'2',title:'제주올레 3코스 (온평~표선)',addr1:'제주특별자치도 서귀포시 성산읍 온평리 온평포구',tel:'064-762-2190',mapx:'126.8983',mapy:'33.4332',overview:'온평포구에서 표선해비치해변까지 이어지는 올레 3코스다.',_pinned:true},
+  {contentid:'_trail_jeju_04',contenttypeid:'trail',area:'39',si:'2',title:'제주올레 4코스 (표선~남원)',addr1:'제주특별자치도 서귀포시 표선면 민속해안로 594 표선해비치해변',tel:'064-762-2190',mapx:'126.8332',mapy:'33.3278',overview:'표선해비치해변에서 남원포구까지 24km를 걷는 제주올레 4코스다.',_pinned:true},
+  {contentid:'_trail_jeju_05',contenttypeid:'trail',area:'39',si:'2',title:'제주올레 5코스 (남원~쇠소깍)',addr1:'제주특별자치도 서귀포시 남원읍 남원리 남원포구',tel:'064-762-2190',mapx:'126.7165',mapy:'33.2773',overview:'남원포구에서 쇠소깍 다리까지 13.4km를 걷는 올레 5코스다.',_pinned:true},
+  {contentid:'_trail_jeju_06',contenttypeid:'trail',area:'39',si:'2',title:'제주올레 6코스 (쇠소깍~서귀포)',addr1:'제주특별자치도 서귀포시 효돈동 쇠소깍',tel:'064-762-2190',mapx:'126.6407',mapy:'33.2604',overview:'쇠소깍에서 제주올레 여행자센터까지 11km를 걷는 코스다.',_pinned:true},
+  {contentid:'_trail_jeju_07',contenttypeid:'trail',area:'39',si:'2',title:'제주올레 7코스 (서귀포~월평)',addr1:'제주특별자치도 서귀포시 서귀동 312 제주올레 여행자센터',tel:'064-762-2190',mapx:'126.5534',mapy:'33.2492',overview:'제주올레 여행자센터에서 월평마을까지 17.7km를 걷는 올레 7코스다.',_pinned:true},
+  {contentid:'_trail_jeju_08',contenttypeid:'trail',area:'39',si:'2',title:'제주올레 10코스 (화순~모슬포)',addr1:'제주특별자치도 서귀포시 안덕면 화순리 화순항',tel:'064-762-2190',mapx:'126.3370',mapy:'33.2358',overview:'화순항에서 모슬포항까지 16.8km를 걷는 올레 10코스다.',_pinned:true},
+  {contentid:'_trail_jeju_09',contenttypeid:'trail',area:'39',si:'1',title:'제주올레 14코스 (저지~한림)',addr1:'제주특별자치도 제주시 한경면 저지리 저지오름 입구',tel:'064-762-2190',mapx:'126.2368',mapy:'33.3210',overview:'저지오름에서 한림항까지 19km를 걷는 올레 14코스다.',_pinned:true},
+  {contentid:'_trail_jeju_10',contenttypeid:'trail',area:'39',si:'1',title:'제주올레 21코스 (협재~고내)',addr1:'제주특별자치도 제주시 한림읍 협재리 협재해수욕장',tel:'064-762-2190',mapx:'126.2397',mapy:'33.3937',overview:'협재해수욕장에서 고내포구까지 13.6km를 걷는 올레 21코스다.',_pinned:true},
+,
+  // ===== 전국 시군구 주요 축제행사 =====
+  {contentid:'_fest_1_23', contenttypeid:'15', area:'1', si:'23', title:'서울빛초롱축제', addr1:'서울특별시 종로구 청계천로 일원', tel:'02-120', overview:'청계천 일대를 아름다운 전통 등(燈) 조형물로 장식하는 겨울 빛 축제로, 매년 11월 청계광장에서 수표교까지 다양한 등불이 수놓인다.', _pinned:true},
+  {contentid:'_fest_1_23b', contenttypeid:'15', area:'1', si:'23', title:'궁중문화축전', addr1:'서울특별시 종로구 효자로 12 경복궁 일원', tel:'02-3704-3114', overview:'경복궁·창덕궁·덕수궁·창경궁 등 5대 고궁에서 펼쳐지는 봄 궁중 문화 체험 축제로, 매년 4~5월 개최된다.', _pinned:true},
+  {contentid:'_fest_1_20', contenttypeid:'15', area:'1', si:'20', title:'여의도 봄꽃축제', addr1:'서울특별시 영등포구 여의도동 윤중로 일원', tel:'02-2670-3114', overview:'한강 여의도 윤중로에서 매년 4월 벚꽃 개화 시기에 맞춰 열리는 봄 꽃 축제로, 연간 수백만 명의 상춘객이 찾는다.', _pinned:true},
+  {contentid:'_fest_1_13', contenttypeid:'15', area:'1', si:'13', title:'서울억새축제', addr1:'서울특별시 마포구 하늘공원로 95 하늘공원', tel:'02-300-5500', overview:'서울 하늘공원 억새 군락지에서 매년 10월 개최되는 가을 축제로, 광활한 억새 물결 감상과 다양한 공연·체험 프로그램이 운영된다.', _pinned:true},
+  {contentid:'_fest_1_18', contenttypeid:'15', area:'1', si:'18', title:'한성백제문화제', addr1:'서울특별시 송파구 올림픽로 424 몽촌토성 일원', tel:'02-2152-5951', overview:'초기 백제의 역사와 문화를 체험하는 역사 문화 축제로, 매년 9~10월 올림픽공원·몽촌토성 일원에서 개최된다.', _pinned:true},
+  {contentid:'_fest_1_23c', contenttypeid:'15', area:'1', si:'23', title:'서울국제불꽃축제', addr1:'서울특별시 종로구 여의도 한강공원 일원', tel:'02-390-0114', overview:'매년 10월 한강에서 열리는 국제 불꽃 경연 대회로, 세계 각국의 불꽃 팀이 참가하여 화려한 불꽃쇼를 선보인다.', _pinned:true},
+  {contentid:'_fest_1_9', contenttypeid:'15', area:'1', si:'9', title:'노원불빛축제', addr1:'서울특별시 노원구 동일로 1234 중계근린공원 일원', tel:'02-2116-3114', overview:'서울 노원구 중계근린공원에서 매년 12월 개최되는 겨울 빛 축제로, 화려한 미디어아트와 LED 조형물이 설치된다.', _pinned:true},
+  {contentid:'_fest_1_22', contenttypeid:'15', area:'1', si:'22', title:'은평 한류축제', addr1:'서울특별시 은평구 진관동 진관사 일원', tel:'02-351-6114', overview:'서울 은평구 일대에서 한류 문화와 전통문화를 결합한 축제로, 매년 가을 한류 팬들이 즐기는 공연·체험 행사가 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_2_1', contenttypeid:'15', area:'2', si:'1', title:'강화고려인삼축제', addr1:'인천광역시 강화군 강화읍 관청리 강화 풍물시장 일원', tel:'032-930-3114', overview:'강화의 특산물인 인삼을 주제로 매년 10월 개최되는 축제로, 인삼 관련 체험과 농산물 판매, 다양한 공연이 진행된다.', _pinned:true},
+  {contentid:'_fest_2_10', contenttypeid:'15', area:'2', si:'10', title:'인천차이나타운축제', addr1:'인천광역시 중구 차이나타운로 일원', tel:'032-760-7464', overview:'인천 차이나타운에서 매년 5월 개최되는 중국 문화 축제로, 전통 공연·먹거리·체험 행사가 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_2_8', contenttypeid:'15', area:'2', si:'8', title:'인천펜타포트락페스티벌', addr1:'인천광역시 연수구 컨벤시아대로 165 송도달빛축제공원', tel:'032-832-5701', overview:'매년 8월 인천 송도에서 열리는 국내 최대 규모의 야외 록 페스티벌로, 국내외 유명 록밴드들이 무대에 오른다.', _pinned:true},
+  {contentid:'_fest_2_9', contenttypeid:'15', area:'2', si:'9', title:'옹진섬꽃축제', addr1:'인천광역시 옹진군 덕적도 일원', tel:'032-899-2114', overview:'서해 도서 지역인 옹진군 일대에서 봄철 섬의 자연경관과 꽃을 주제로 개최되는 생태 축제이다.', _pinned:true},
+  {contentid:'_fest_2_8b', contenttypeid:'15', area:'2', si:'8', title:'연수능허대문화축제', addr1:'인천광역시 연수구 옥련동 능허대공원 일원', tel:'032-749-7114', overview:'고대 백제의 해상 관문인 능허대의 역사를 기리는 지역 대표 문화 축제로, 매년 가을 다양한 역사 체험 행사가 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_3_4', contenttypeid:'15', area:'3', si:'4', title:'대전사이언스페스티벌', addr1:'대전광역시 유성구 엑스포로 107 한빛탑광장 일원', tel:'042-270-4114', overview:'대한민국 과학 수도 대전에서 매년 10월 개최되는 과학 축제로, 과학 체험·전시·공연이 어우러진 대규모 행사이다.', _pinned:true},
+  {contentid:'_fest_3_5', contenttypeid:'15', area:'3', si:'5', title:'대전 0시 축제', addr1:'대전광역시 중구 은행동 으능정이 문화의거리 일원', tel:'042-270-4114', overview:'대전 원도심 은행동 일대에서 매년 여름 개최되는 도시 문화 축제로, 다양한 공연과 체험, 먹거리 행사가 진행된다.', _pinned:true},
+  {contentid:'_fest_3_1', contenttypeid:'15', area:'3', si:'1', title:'대전 대덕구 계족산 맨발축제', addr1:'대전광역시 대덕구 장동 계족산 황톳길 일원', tel:'042-608-6114', overview:'대전 계족산 황톳길에서 매년 봄·가을에 열리는 맨발 걷기 축제로, 건강과 자연을 체험하는 힐링 행사이다.', _pinned:true},
+  {contentid:'_fest_4_3', contenttypeid:'15', area:'4', si:'3', title:'대구치맥페스티벌', addr1:'대구광역시 달서구 공원순환로 36 두류공원 일원', tel:'053-627-8900', overview:'치킨과 맥주를 테마로 매년 7월 대구 두류공원에서 개최되는 여름 축제로, 100만 명 이상이 방문하는 대구의 대표 축제이다.', _pinned:true},
+  {contentid:'_fest_4_9', contenttypeid:'15', area:'4', si:'9', title:'대구약령시한방문화축제', addr1:'대구광역시 중구 달구벌대로415길 49 약령시 일원', tel:'053-253-4729', overview:'350년 역사의 대구 약령시에서 매년 5월 개최되는 한방·전통 문화 축제로, 한방 체험과 전통 공연이 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_4_5', contenttypeid:'15', area:'4', si:'5', title:'대구국제오페라축제', addr1:'대구광역시 동구 동대구로 351 대구오페라하우스', tel:'053-666-6000', overview:'매년 10월 대구오페라하우스에서 개최되는 국제 오페라 축제로, 국내외 오페라단이 참가하는 문화 예술 축제이다.', _pinned:true},
+  {contentid:'_fest_4_8', contenttypeid:'15', area:'4', si:'8', title:'대구수성못별빛축제', addr1:'대구광역시 수성구 수성못변길 일원', tel:'053-666-4226', overview:'대구 수성못 일원에서 야간 경관을 주제로 개최되는 빛 축제로, 화려한 LED 조형물과 음악이 어우러진 야경 행사이다.', _pinned:true},
+  {contentid:'_fest_4_1', contenttypeid:'15', area:'4', si:'1', title:'군위삼국유사축제', addr1:'대구광역시 군위군 삼국유사면 화산리 일연공원 일원', tel:'054-382-4714', overview:'『삼국유사』를 저술한 일연 스님의 고향 군위에서 매년 가을 개최되는 역사문화 축제로, 삼국시대 체험과 전통 공연이 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_5_4', contenttypeid:'15', area:'5', si:'4', title:'광주비엔날레', addr1:'광주광역시 북구 비엔날레로 111 광주비엔날레전시관', tel:'062-608-4114', overview:'세계적인 현대미술 축제로 매년 9~11월 광주에서 개최되며, 국내외 현대 미술 작품을 전시·공연하는 국제 미술 행사이다.', _pinned:true},
+  {contentid:'_fest_5_1', contenttypeid:'15', area:'5', si:'1', title:'광주프린지페스티벌', addr1:'광주광역시 광산구 첨단중앙로 182 일원', tel:'062-960-8114', overview:'다양한 장르의 독립 공연과 예술을 즐길 수 있는 거리 문화 축제로, 매년 여름 광주 일원에서 개최된다.', _pinned:true},
+  {contentid:'_fest_5_3', contenttypeid:'15', area:'5', si:'3', title:'충장축제', addr1:'광주광역시 동구 충장로 일원', tel:'062-608-4114', overview:'광주 충장로를 무대로 매년 10월 개최되는 거리 문화 축제로, 7080 복고 퍼레이드와 공연이 대표적인 볼거리이다.', _pinned:true},
+  {contentid:'_fest_6_15', contenttypeid:'15', area:'6', si:'15', title:'부산국제영화제(BIFF)', addr1:'부산광역시 해운대구 수영강변대로 120 영화의전당 일원', tel:'051-780-6000', overview:'매년 10월 부산에서 개최되는 아시아 최대 국제 영화제로, 센텀시티 영화의전당과 남포동 BIFF광장 일원에서 진행된다.', _pinned:true},
+  {contentid:'_fest_6_16', contenttypeid:'15', area:'6', si:'16', title:'해운대모래축제', addr1:'부산광역시 해운대구 해운대해수욕장 일원', tel:'051-749-4000', overview:'매년 5~6월 해운대해수욕장에서 열리는 모래 조각 축제로, 국내외 모래 조각 작가들이 참여해 대형 작품을 선보인다.', _pinned:true},
+  {contentid:'_fest_6_16b', contenttypeid:'15', area:'6', si:'16', title:'해운대빛축제', addr1:'부산광역시 해운대구 해운대해수욕장 일원', tel:'051-749-4000', overview:'매년 11~1월 해운대 해변 일대에서 열리는 겨울 빛 축제로, 화려한 LED 조형물과 미디어아트가 해변을 수놓는다.', _pinned:true},
+  {contentid:'_fest_6_12', contenttypeid:'15', area:'6', si:'12', title:'부산불꽃축제', addr1:'부산광역시 수영구 광안리해수욕장 일원', tel:'051-888-5114', overview:'매년 10월 광안리해수욕장에서 광안대교를 배경으로 펼쳐지는 화려한 불꽃 축제로, 100만 명 이상이 관람하는 부산 최대 축제이다.', _pinned:true},
+  {contentid:'_fest_6_6', contenttypeid:'15', area:'6', si:'6', title:'동래읍성역사축제', addr1:'부산광역시 동래구 명륜로 112 동래읍성 일원', tel:'051-550-4114', overview:'동래 읍성의 역사와 임진왜란 당시 동래 부사 송상현 공의 순절을 기리는 역사 문화 축제로, 매년 10월 개최된다.', _pinned:true},
+  {contentid:'_fest_6_3', contenttypeid:'15', area:'6', si:'3', title:'기장멸치축제', addr1:'부산광역시 기장군 기장읍 기장해안로 일원', tel:'051-709-4000', overview:'기장 특산물인 멸치를 주제로 매년 봄에 열리는 수산물 축제로, 멸치 맨손잡기 체험과 다양한 해산물 먹거리가 제공된다.', _pinned:true},
+  {contentid:'_fest_6_7', contenttypeid:'15', area:'6', si:'7', title:'부산국제록페스티벌', addr1:'부산광역시 부산진구 가야대로 일원', tel:'051-888-5114', overview:'부산 일원에서 매년 여름 개최되는 국제 록 음악 페스티벌로, 국내외 다양한 록 밴드가 참여하는 대규모 음악 축제이다.', _pinned:true},
+  {contentid:'_fest_7_5', contenttypeid:'15', area:'7', si:'5', title:'울산옹기축제', addr1:'울산광역시 중구 태화강 둔치 일원', tel:'052-290-3114', overview:'울산 외고산 옹기마을을 중심으로 매년 5월 개최되는 도자기·옹기 문화 축제로, 전통 옹기 제작 체험과 판매가 이루어진다.', _pinned:true},
+  {contentid:'_fest_7_2', contenttypeid:'15', area:'7', si:'2', title:'울산고래축제', addr1:'울산광역시 남구 장생포고래로 244 장생포 고래문화특구 일원', tel:'052-226-0980', overview:'고래의 도시 울산 장생포에서 매년 5월 개최되는 고래 테마 축제로, 고래 관련 전시·체험과 공연이 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_7_4', contenttypeid:'15', area:'7', si:'4', title:'울주옹기종기축제', addr1:'울산광역시 울주군 온산읍 외고산 옹기마을 일원', tel:'052-229-3820', overview:'울주 외고산 옹기마을에서 매년 봄 개최되는 전통 옹기 문화 축제로, 장인들의 옹기 제작 시연과 체험 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_8_1', contenttypeid:'15', area:'8', si:'1', title:'세종축제', addr1:'세종특별자치시 세종로 2130 세종호수공원 일원', tel:'044-300-5114', overview:'세종호수공원을 무대로 매년 10월 개최되는 세종시 대표 문화 축제로, 공연·체험·전시 등 다양한 프로그램이 운영된다.', _pinned:true},
+  {contentid:'_fest_8_1b', contenttypeid:'15', area:'8', si:'1', title:'세종벚꽃축제', addr1:'세종특별자치시 어진동 국립세종수목원 일원', tel:'044-300-5114', overview:'세종 국립수목원 일원에서 봄철 벚꽃 개화 시기에 맞춰 개최되는 봄꽃 축제로, 산책로를 따라 다양한 봄꽃 경관을 즐길 수 있다.', _pinned:true},
+  {contentid:'_fest_31_1', contenttypeid:'15', area:'31', si:'1', title:'가평자라섬재즈페스티벌', addr1:'경기도 가평군 가평읍 자라섬로 60 자라섬', tel:'031-581-2214', overview:'자라섬에서 매년 10월 개최되는 국내 대표 재즈 페스티벌로, 국내외 재즈 뮤지션들이 참가하는 음악 축제이다.', _pinned:true},
+  {contentid:'_fest_31_2', contenttypeid:'15', area:'31', si:'2', title:'고양국제꽃박람회', addr1:'경기도 고양시 일산서구 킨텍스로 217-60 일산호수공원', tel:'031-960-4965', overview:'매년 봄(4~5월) 일산호수공원에서 개최되는 국내 최대 규모의 꽃 박람회로, 다양한 화훼 작품과 테마 정원이 조성된다.', _pinned:true},
+  {contentid:'_fest_31_13', contenttypeid:'15', area:'31', si:'13', title:'수원화성문화제', addr1:'경기도 수원시 팔달구 정조로 825 화성행궁광장 일원', tel:'031-242-5683', overview:'세계문화유산 수원화성에서 매년 10월 개최되는 역사 문화 축제로, 정조대왕 능행차 재현 행사가 대표적인 볼거리이다.', _pinned:true},
+  {contentid:'_fest_31_19', contenttypeid:'15', area:'31', si:'19', title:'양평빙어축제', addr1:'경기도 양평군 양평읍 백동로 134 백동저수지 일원', tel:'031-770-1014', overview:'매년 12월~2월 양평 백동저수지에서 개최되는 겨울 빙어낚시 축제로, 얼음낚시 체험과 다양한 겨울 놀이가 운영된다.', _pinned:true},
+  {contentid:'_fest_31_20', contenttypeid:'15', area:'31', si:'20', title:'여주오곡나루축제', addr1:'경기도 여주시 강변유원지 일원', tel:'031-887-3577', overview:'여주의 쌀·오곡·고구마 등 농특산물을 홍보하는 가을 수확 축제로, 매년 10월 강변유원지 일원에서 개최된다.', _pinned:true},
+  {contentid:'_fest_31_21', contenttypeid:'15', area:'31', si:'21', title:'연천전곡리구석기축제', addr1:'경기도 연천군 전곡읍 전곡리 유네스코 세계지질공원 일원', tel:'031-839-2139', overview:'아슐리안 석기 발굴지인 전곡리에서 매년 5월 개최되는 선사 문화 체험 축제로, 구석기 생활 재현과 체험 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_31_26', contenttypeid:'15', area:'31', si:'26', title:'이천쌀문화축제', addr1:'경기도 이천시 설봉공원 일원', tel:'031-644-2017', overview:'한국의 대표 쌀 산지 이천에서 매년 10월 개최되는 쌀 문화 축제로, 가마솥밥 짓기와 무지개 가래떡 만들기 등의 전통 행사가 진행된다.', _pinned:true},
+  {contentid:'_fest_31_16', contenttypeid:'15', area:'31', si:'16', title:'안성맞춤남사당바우덕이축제', addr1:'경기도 안성시 공도읍 안성맞춤대로 134 안성맞춤랜드', tel:'031-678-2242', overview:'전설의 여성 꼭두쇠 바우덕이의 예술 정신을 기리는 축제로, 매년 10월 유네스코 공식 협력기구 공식 축제로 인정받았다.', _pinned:true},
+  {contentid:'_fest_31_27', contenttypeid:'15', area:'31', si:'27', title:'파주장단콩축제', addr1:'경기도 파주시 문산읍 통일로 일원', tel:'031-940-4354', overview:'파주의 특산물인 장단콩을 주제로 매년 11월 개최되는 농산물 축제로, 두부 만들기 체험 등 다양한 농촌 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_31_29', contenttypeid:'15', area:'31', si:'29', title:'포천산정호수명성산억새축제', addr1:'경기도 포천시 영북면 산정호수로 411-116 산정호수 일원', tel:'031-538-3030', overview:'포천 산정호수와 명성산 억새 군락지에서 매년 10월 개최되는 가을 억새 축제로, 산정호수의 절경을 감상하며 억새를 즐길 수 있다.', _pinned:true},
+  {contentid:'_fest_31_9', contenttypeid:'15', area:'31', si:'9', title:'남양주다산문화제', addr1:'경기도 남양주시 조안면 다산로 747번길 11 다산유적지 일원', tel:'031-590-2114', overview:'실학자 정약용의 생가 터인 남양주에서 매년 가을 개최되는 역사 문화 축제로, 실학 사상 체험과 전통 공연이 운영된다.', _pinned:true},
+  {contentid:'_fest_31_31', contenttypeid:'15', area:'31', si:'31', title:'화성뱃놀이축제', addr1:'경기도 화성시 우정읍 국화리 궁평항 일원', tel:'031-369-6331', overview:'화성 궁평항 일대에서 매년 가을 개최되는 해양 문화 축제로, 뱃놀이 체험과 다양한 수산물 먹거리가 제공된다.', _pinned:true},
+  {contentid:'_fest_31_15', contenttypeid:'15', area:'31', si:'15', title:'안산국제거리극축제', addr1:'경기도 안산시 단원구 화랑로 312 안산문화광장 일원', tel:'031-481-0114', overview:'안산 화랑유원지 일대에서 매년 5월 개최되는 국제 거리 예술 축제로, 세계 각국의 다양한 거리 공연단이 참가한다.', _pinned:true},
+  {contentid:'_fest_32_17', contenttypeid:'15', area:'32', si:'17', title:'화천산천어축제', addr1:'강원특별자치도 화천군 화천읍 산천어길 137', tel:'033-440-2575', overview:'매년 1월 화천 북한강에서 개최되는 겨울 얼음낚시 축제로, CNN이 선정한 겨울의 7대 불가사의 중 하나이다.', _pinned:true},
+  {contentid:'_fest_32_11', contenttypeid:'15', area:'32', si:'11', title:'정선아리랑제', addr1:'강원특별자치도 정선군 정선읍 애산로 51', tel:'033-560-2340', overview:'유네스코 무형문화유산인 정선아리랑을 주제로 매년 10월 개최되는 전통 음악 축제로, 아리랑 공연과 정선 특유의 민속 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_32_15', contenttypeid:'15', area:'32', si:'15', title:'평창효석문화제', addr1:'강원특별자치도 평창군 봉평면 이효석길 157', tel:'033-330-2771', overview:'소설 \'메밀꽃 필 무렵\'의 배경지 평창 봉평에서 매년 9월 개최되는 문학 문화 축제로, 메밀꽃 밭과 이효석의 문학 세계를 체험할 수 있다.', _pinned:true},
+  {contentid:'_fest_32_13', contenttypeid:'15', area:'32', si:'13', title:'춘천마임축제', addr1:'강원특별자치도 춘천시 공지로 284 공지천 일원', tel:'033-242-8677', overview:'매년 5월 춘천 공지천 일원에서 개최되는 마임·퍼포먼스 축제로, 국내외 마임이스트들이 참가하는 국제 거리 예술 행사이다.', _pinned:true},
+  {contentid:'_fest_32_8', contenttypeid:'15', area:'32', si:'8', title:'영월동강축제', addr1:'강원특별자치도 영월군 영월읍 동강변 일원', tel:'033-375-4554', overview:'청정 동강에서 매년 7~8월 개최되는 여름 래프팅·수상 레저 축제로, 동강의 자연환경을 활용한 다양한 수상 스포츠 행사가 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_32_1', contenttypeid:'15', area:'32', si:'1', title:'강릉단오제', addr1:'강원특별자치도 강릉시 남대천로 일원', tel:'033-641-1593', overview:'유네스코 인류무형문화유산으로 등재된 전통 민속 축제로, 매년 음력 5월 단오 때 강릉 남대천에서 그네뛰기·씨름·탈놀이 등이 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_32_5', contenttypeid:'15', area:'32', si:'5', title:'속초사계절불꽃축제', addr1:'강원특별자치도 속초시 해수욕장 일원', tel:'033-639-2114', overview:'속초 해수욕장에서 개최되는 불꽃 축제로, 설악산과 청초호 경관을 배경으로 화려한 불꽃쇼가 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_32_7', contenttypeid:'15', area:'32', si:'7', title:'양양연어축제', addr1:'강원특별자치도 양양군 남대천 일원', tel:'033-670-2459', overview:'양양 남대천에서 매년 10월 연어 회귀 시기에 맞춰 개최되는 생태 축제로, 연어 관찰 및 맨손잡기 체험이 가능하다.', _pinned:true},
+  {contentid:'_fest_32_14', contenttypeid:'15', area:'32', si:'14', title:'태백산눈축제', addr1:'강원특별자치도 태백시 태백산도립공원 일원', tel:'033-552-0088', overview:'매년 1~2월 태백산에서 개최되는 겨울 눈 축제로, 눈 조각 전시와 눈썰매·눈사람 만들기 등 다양한 겨울 체험 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_32_4', contenttypeid:'15', area:'32', si:'4', title:'삼척신기대이리동굴축제', addr1:'강원특별자치도 삼척시 신기면 환선로 800 대이리동굴지대', tel:'033-570-3281', overview:'환선굴·관음굴 등 천연기념물 동굴 지대를 배경으로 매년 가을 개최되는 동굴 자연 축제이다.', _pinned:true},
+  {contentid:'_fest_32_3', contenttypeid:'15', area:'32', si:'3', title:'동해묵호오징어축제', addr1:'강원특별자치도 동해시 묵호동 묵호항 일원', tel:'033-530-2114', overview:'동해의 대표 수산물인 오징어를 주제로 매년 8월 묵호항에서 개최되는 수산물 축제로, 오징어 낚시와 먹거리 행사가 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_32_9', contenttypeid:'15', area:'32', si:'9', title:'원주다이내믹댄싱카니발', addr1:'강원특별자치도 원주시 시청 앞 일원', tel:'033-737-2560', overview:'매년 10월 원주 시내 일원에서 개최되는 거리 댄스 축제로, 세계 각국의 댄서들이 참가하는 국제 댄스 카니발이다.', _pinned:true},
+  {contentid:'_fest_32_6', contenttypeid:'15', area:'32', si:'6', title:'양구해안분지메아리축제', addr1:'강원특별자치도 양구군 해안면 일원', tel:'033-480-2307', overview:'DMZ 인접 고산분지인 양구 해안면에서 매년 여름 개최되는 생태·자연 축제로, 청정 자연 환경과 농촌 체험이 어우러진 행사이다.', _pinned:true},
+  {contentid:'_fest_32_10', contenttypeid:'15', area:'32', si:'10', title:'인제빙어축제', addr1:'강원특별자치도 인제군 남면 부평리 소양호 일원', tel:'033-460-2170', overview:'소양호 상류에서 매년 1~2월 개최되는 겨울 빙어낚시 축제로, 빙어낚시 체험과 눈·얼음 놀이가 운영된다.', _pinned:true},
+  {contentid:'_fest_32_18', contenttypeid:'15', area:'32', si:'18', title:'횡성한우축제', addr1:'강원특별자치도 횡성군 횡성읍 한우로 일원', tel:'033-342-4950', overview:'한우의 고장 횡성에서 매년 10월 개최되는 한우 문화 축제로, 한우 요리 체험과 저렴한 한우 구입이 가능하다.', _pinned:true},
+  {contentid:'_fest_33_2', contenttypeid:'15', area:'33', si:'2', title:'단양소백산철쭉제', addr1:'충청북도 단양군 가곡면 소백산 일원', tel:'043-422-1146', overview:'단양 소백산 비로봉 일원에서 매년 5월 철쭉 개화 시기에 열리는 봄꽃 축제로, 철쭉 군락지 하이킹과 각종 체험 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_33_7', contenttypeid:'15', area:'33', si:'7', title:'제천국제음악영화제', addr1:'충청북도 제천시 청풍면 의림대로 1 청풍호반 일원', tel:'043-651-1340', overview:'청풍호수를 배경으로 매년 8월 제천에서 개최되는 음악 영화 전문 국제 영화제이다.', _pinned:true},
+  {contentid:'_fest_33_9', contenttypeid:'15', area:'33', si:'9', title:'청주직지축제', addr1:'충청북도 청주시 흥덕구 직지대로 713 청주고인쇄박물관 일원', tel:'043-201-0114', overview:'세계 최고(最古) 금속활자본 직지의 탄생지 청주에서 매년 9~10월 개최되는 인쇄 문화 축제이다.', _pinned:true},
+  {contentid:'_fest_33_10', contenttypeid:'15', area:'33', si:'10', title:'충주세계무술축제', addr1:'충청북도 충주시 탄금대로 탄금호 일원', tel:'043-842-1314', overview:'충주 탄금호 일원에서 매년 9~10월 개최되는 국제 무술 축제로, 세계 각국의 다양한 무술 시연과 체험이 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_33_3', contenttypeid:'15', area:'33', si:'3', title:'보은대추축제', addr1:'충청북도 보은군 보은읍 삼산리 보은삼거리 일원', tel:'043-540-3353', overview:'보은의 특산물인 대추를 주제로 매년 10월 개최되는 농산물 축제로, 대추 따기 체험과 대추 요리 시연이 운영된다.', _pinned:true},
+  {contentid:'_fest_33_4', contenttypeid:'15', area:'33', si:'4', title:'영동와인코리아', addr1:'충청북도 영동군 영동읍 영동황간로 일원', tel:'043-740-3114', overview:'국내 최대 포도 산지 영동에서 매년 10월 개최되는 와인·포도 문화 축제로, 포도 수확 체험과 와인 시음이 가능하다.', _pinned:true},
+  {contentid:'_fest_33_1', contenttypeid:'15', area:'33', si:'1', title:'괴산고추축제', addr1:'충청북도 괴산군 괴산읍 문화로 일원', tel:'043-830-3114', overview:'한국 고추의 본고장 괴산에서 매년 9월 개최되는 고추 문화 축제로, 고추 요리 경연과 다양한 고추 관련 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_33_5', contenttypeid:'15', area:'33', si:'5', title:'옥천지용제', addr1:'충청북도 옥천군 옥천읍 향수길 56 정지용 생가 일원', tel:'043-730-3114', overview:'시인 정지용의 고향 옥천에서 매년 5월 개최되는 문학 축제로, 향수(鄕愁)를 주제로 한 시 낭송과 문학 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_34_6', contenttypeid:'15', area:'34', si:'6', title:'보령머드축제', addr1:'충청남도 보령시 신흑동 대천해수욕장 일원', tel:'041-930-0900', overview:'매년 7~8월 대천해수욕장에서 개최되는 국제 머드 체험 축제로, 외국인 방문객이 가장 많은 한국의 여름 대표 축제이다.', _pinned:true},
+  {contentid:'_fest_34_2', contenttypeid:'15', area:'34', si:'2', title:'공주백제문화제', addr1:'충청남도 공주시 금강신관공원 일원', tel:'041-856-7700', overview:'백제의 고도 공주와 부여에서 매년 10월 개최되는 백제 역사 문화 축제로, 백제 생활 재현과 역사 체험 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_34_7', contenttypeid:'15', area:'34', si:'7', title:'부여백제문화제', addr1:'충청남도 부여군 부여읍 사비로 25 부여문화공원 일원', tel:'041-835-0914', overview:'백제의 마지막 수도 부여에서 매년 10월 개최되는 역사 문화 축제로, 부여 부소산성·궁남지 일원에서 백제 문화가 재현된다.', _pinned:true},
+  {contentid:'_fest_34_10', contenttypeid:'15', area:'34', si:'10', title:'아산성웅이순신축제', addr1:'충청남도 아산시 염치읍 현충사길 126 현충사 일원', tel:'041-537-2567', overview:'이순신 장군의 고향 아산에서 매년 4~5월 개최되는 역사 문화 축제로, 현충사에서 이순신 장군의 업적을 기리는 다양한 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_34_5', contenttypeid:'15', area:'34', si:'5', title:'당진해나루취쌀축제', addr1:'충청남도 당진시 신평면 한진포구 일원', tel:'041-350-3411', overview:'당진 특산물인 해나루쌀을 주제로 매년 10월 개최되는 쌀 문화 축제로, 쌀 수확 체험과 전통 농경 문화 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_34_8', contenttypeid:'15', area:'34', si:'8', title:'서산해미읍성축제', addr1:'충청남도 서산시 해미면 해미읍성길 8 해미읍성', tel:'041-660-2538', overview:'국내 원형이 가장 잘 보존된 해미읍성에서 매년 10월 개최되는 역사 문화 축제로, 조선시대 생활상 재현과 전통 민속놀이가 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_34_14', contenttypeid:'15', area:'34', si:'14', title:'태안빛축제', addr1:'충청남도 태안군 태안읍 백화로 123 태안꽃박람회장 일원', tel:'041-670-2762', overview:'태안 꽃박람회장에서 매년 12~2월 개최되는 겨울 빛 축제로, 화려한 LED 꽃 조형물과 빛 터널이 설치된다.', _pinned:true},
+  {contentid:'_fest_34_13', contenttypeid:'15', area:'34', si:'13', title:'청양고추구기자축제', addr1:'충청남도 청양군 청양읍 군청길 1 청양 구기자타운 일원', tel:'041-940-2719', overview:'고추와 구기자의 본고장 청양에서 매년 9월 개최되는 농산물 축제로, 청양 매운 고추 먹기 대회와 체험 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_34_4', contenttypeid:'15', area:'34', si:'4', title:'논산딸기축제', addr1:'충청남도 논산시 강경읍 강경농협로 일원', tel:'041-746-5400', overview:'한국 최대 딸기 생산지 논산에서 매년 4월 개최되는 딸기 수확 축제로, 딸기 따기 체험과 다양한 딸기 요리가 제공된다.', _pinned:true},
+  {contentid:'_fest_34_11', contenttypeid:'15', area:'34', si:'11', title:'예산사과축제', addr1:'충청남도 예산군 예산읍 사과로 일원', tel:'041-339-7114', overview:'한국의 대표 사과 산지 예산에서 매년 10월 개최되는 사과 수확 축제로, 사과 따기 체험과 사과 요리 경연이 운영된다.', _pinned:true},
+  {contentid:'_fest_34_3', contenttypeid:'15', area:'34', si:'3', title:'금산인삼축제', addr1:'충청남도 금산군 금산읍 인삼광장로 30 인삼약초시장 일원', tel:'041-750-2700', overview:'한국 인삼의 본고장 금산에서 매년 9~10월 개최되는 인삼 문화 축제로, 인삼 관련 체험과 약초 시장이 운영된다.', _pinned:true},
+  {contentid:'_fest_34_9', contenttypeid:'15', area:'34', si:'9', title:'서천한산모시문화제', addr1:'충청남도 서천군 한산면 한산모시관길 30 한산모시관 일원', tel:'041-950-4024', overview:'국가무형문화재 한산모시의 전통을 이어가는 서천에서 매년 5~6월 개최되는 전통 직물 문화 축제이다.', _pinned:true},
+  {contentid:'_fest_35_11', contenttypeid:'15', area:'35', si:'11', title:'안동국제탈춤페스티벌', addr1:'경상북도 안동시 번영로 일원', tel:'054-840-3400', overview:'유네스코 인류무형문화유산 한국 탈춤을 주제로 매년 9~10월 안동에서 개최되는 국제 탈춤 축제로, 세계 각국 탈춤팀이 참가한다.', _pinned:true},
+  {contentid:'_fest_35_2', contenttypeid:'15', area:'35', si:'2', title:'경주한국의술문화축제', addr1:'경상북도 경주시 황성동 화랑의집 일원', tel:'054-779-8585', overview:'신라 천년의 고도 경주에서 매년 4월 벚꽃 개화 시기에 맞춰 개최되는 봄 문화 축제로, 고대 신라 문화 체험이 가능하다.', _pinned:true},
+  {contentid:'_fest_35_2b', contenttypeid:'15', area:'35', si:'2', title:'경주신라문화제', addr1:'경상북도 경주시 황성공원 일원', tel:'054-779-8585', overview:'신라의 역사와 문화를 기리는 경주의 대표 축제로, 매년 10월 황성공원에서 화랑 행렬 재현과 전통 공연이 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_35_23', contenttypeid:'15', area:'35', si:'23', title:'포항국제불빛축제', addr1:'경상북도 포항시 남구 효자동 영일대해수욕장 일원', tel:'054-270-5114', overview:'매년 8월 포항 영일대해수욕장에서 개최되는 여름 불꽃 축제로, 영일만을 배경으로 한 화려한 불꽃쇼가 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_35_14', contenttypeid:'15', area:'35', si:'14', title:'영주선비문화축제', addr1:'경상북도 영주시 가흥동 소수서원 일원', tel:'054-639-6397', overview:'우리나라 최초 서원인 소수서원이 있는 영주에서 매년 9월 개최되는 선비 문화 체험 축제로, 과거시험 체험과 전통 공연이 운영된다.', _pinned:true},
+  {contentid:'_fest_35_8', contenttypeid:'15', area:'35', si:'8', title:'봉화은어축제', addr1:'경상북도 봉화군 법전면 봉성리 내성천 일원', tel:'054-679-6341', overview:'청정 내성천에서 매년 8월 개최되는 은어 낚시 체험 축제로, 은어 맨손잡기 체험과 다양한 수상 레저 프로그램이 운영된다.', _pinned:true},
+  {contentid:'_fest_35_20', contenttypeid:'15', area:'35', si:'20', title:'청도소싸움축제', addr1:'경상북도 청도군 화양읍 청도천변 청도소싸움경기장', tel:'054-370-6072', overview:'경상북도 청도에서 매년 2~3월 개최되는 전통 소싸움 축제로, 전국의 싸움소들이 경합을 벌이는 전통 민속 행사이다.', _pinned:true},
+  {contentid:'_fest_35_3', contenttypeid:'15', area:'35', si:'3', title:'고령대가야축제', addr1:'경상북도 고령군 대가야읍 지산리 대가야역사테마관광지 일원', tel:'054-950-6803', overview:'대가야의 역사와 문화를 기리는 축제로, 매년 4월 고령 대가야역사테마관광지에서 개최되며 대가야 왕실 문화 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_35_1', contenttypeid:'15', area:'35', si:'1', title:'경산자인단오제', addr1:'경상북도 경산시 자인면 계정숲 일원', tel:'053-810-6053', overview:'경북 경산 자인의 전통 단오 민속 축제로, 매년 음력 5월 단오에 여원무·한장군놀이 등 무형문화재 행사가 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_35_4', contenttypeid:'15', area:'35', si:'4', title:'구미낙동강축제', addr1:'경상북도 구미시 산동면 강변 낙동강 일원', tel:'054-480-2114', overview:'낙동강변 구미에서 매년 10월 개최되는 강 문화 축제로, 낙동강 자연 경관을 배경으로 다양한 체험과 공연이 운영된다.', _pinned:true},
+  {contentid:'_fest_36_13', contenttypeid:'15', area:'36', si:'13', title:'진해군항제', addr1:'경상남도 창원시 진해구 여좌천로 일원', tel:'055-225-3691', overview:'매년 4월 창원 진해 여좌천 일원에서 개최되는 봄 벚꽃 축제로, 전국 최대 규모의 벚꽃 명소에서 130만 그루 벚꽃을 즐길 수 있다.', _pinned:true},
+  {contentid:'_fest_36_11', contenttypeid:'15', area:'36', si:'11', title:'진주남강유등축제', addr1:'경상남도 진주시 남강로 626 진주성 일원', tel:'055-749-2480', overview:'진주 남강에서 매년 10월 개최되는 유등(流燈) 축제로, 유네스코 공식 행사로 인정받은 대한민국 대표 가을 축제이다.', _pinned:true},
+  {contentid:'_fest_36_14', contenttypeid:'15', area:'36', si:'14', title:'통영한산대첩축제', addr1:'경상남도 통영시 문화동 통영항 일원', tel:'055-644-3261', overview:'1592년 한산대첩을 기념하는 역사 문화 축제로, 매년 8월 통영에서 해전 재현·전통 공연 등 다양한 행사가 진행된다.', _pinned:true},
+  {contentid:'_fest_36_6', contenttypeid:'15', area:'36', si:'6', title:'밀양아리랑대축제', addr1:'경상남도 밀양시 내일동 아리랑대로 밀양강 일원', tel:'055-359-5620', overview:'밀양아리랑을 주제로 매년 5월 밀양강 일원에서 개최되는 전통 민속 문화 축제로, 아리랑 공연과 지역 문화 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_36_16', contenttypeid:'15', area:'36', si:'16', title:'함안아라홍련축제', addr1:'경상남도 함안군 가야읍 말산리 악양생태공원 일원', tel:'055-580-2114', overview:'7백 년 전 씨앗에서 발아한 아라홍련이 피는 함안 악양생태공원에서 매년 7월 개최되는 연꽃 생태 축제이다.', _pinned:true},
+  {contentid:'_fest_36_12', contenttypeid:'15', area:'36', si:'12', title:'창녕낙동강유채꽃축제', addr1:'경상남도 창녕군 이방면 낙동강 유채꽃밭 일원', tel:'055-530-1114', overview:'낙동강변 광활한 유채꽃밭에서 매년 4월 개최되는 봄꽃 축제로, 유채꽃 사진 촬영과 자전거 타기 등 체험 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_36_15', contenttypeid:'15', area:'36', si:'15', title:'하동야생차문화축제', addr1:'경상남도 하동군 화개면 쌍계로 하동야생차밭 일원', tel:'055-880-2114', overview:'한국 차(茶) 문화의 발상지 하동에서 매년 5월 개최되는 차 문화 축제로, 야생차 잎 따기·덖기 체험과 다도 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_36_8', contenttypeid:'15', area:'36', si:'8', title:'산청한방약초축제', addr1:'경상남도 산청군 산청읍 친환경로 일원', tel:'055-970-6726', overview:'약초의 고장 산청에서 매년 9~10월 개최되는 한방 의약 문화 축제로, 한방 체험과 약초 관련 다양한 체험 프로그램이 운영된다.', _pinned:true},
+  {contentid:'_fest_36_2', contenttypeid:'15', area:'36', si:'2', title:'거창국제연극제', addr1:'경상남도 거창군 거창읍 거창국제연극제 야외공연장', tel:'055-942-2111', overview:'매년 8월 거창에서 개최되는 국제 연극 축제로, 국내외 다양한 연극 단체가 참가하는 여름 야외 공연 축제이다.', _pinned:true},
+  {contentid:'_fest_36_1', contenttypeid:'15', area:'36', si:'1', title:'거제해양축제', addr1:'경상남도 거제시 일원 거제 해수욕장', tel:'055-639-3114', overview:'경남 거제도에서 매년 여름 개최되는 해양 문화 축제로, 다양한 해양 레저 체험과 수산물 먹거리 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_37_12', contenttypeid:'15', area:'37', si:'12', title:'전주한지문화축제', addr1:'전북특별자치도 전주시 완산구 현무1길 20 한국전통문화전당 일원', tel:'063-281-3023', overview:'천년 한지의 우수성을 알리는 전주에서 매년 5월 개최되는 전통 종이 문화 축제로, 한지 제작 체험과 전시 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_37_12b', contenttypeid:'15', area:'37', si:'12', title:'전주비빔밥축제', addr1:'전북특별자치도 전주시 완산구 한옥마을 일원', tel:'063-281-5182', overview:'전주 한옥마을에서 매년 10월 개최되는 비빔밥 문화 축제로, 다양한 비빔밥 레시피 경연과 전통 음식 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_37_2', contenttypeid:'15', area:'37', si:'2', title:'군산시간여행축제', addr1:'전북특별자치도 군산시 시청로 17 구 시청광장 일원', tel:'063-454-3304', overview:'근대 역사 도시 군산의 일제강점기 근대 거리를 배경으로 매년 10월 개최되는 시간 여행 테마 축제이다.', _pinned:true},
+  {contentid:'_fest_37_3', contenttypeid:'15', area:'37', si:'3', title:'김제지평선축제', addr1:'전북특별자치도 김제시 부량면 벽골제로 442 벽골제 일원', tel:'063-540-2884', overview:'국내 유일의 지평선을 볼 수 있는 김제 만경평야에서 매년 10월 개최되는 농경 문화 축제로, 가마니 짜기·탈곡 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_37_1', contenttypeid:'15', area:'37', si:'1', title:'고창청보리밭축제', addr1:'전북특별자치도 고창군 공음면 학원농장길 150 학원농장', tel:'063-564-9897', overview:'드넓은 학원농장 청보리밭에서 매년 4~5월 개최되는 봄 축제로, 보리밭 사잇길 걷기와 각종 농촌 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_37_5', contenttypeid:'15', area:'37', si:'5', title:'무주반딧불축제', addr1:'전북특별자치도 무주군 무주읍 한풍루로 326-14 등나무운동장', tel:'063-320-5641', overview:'청정 환경의 척도인 반딧불이를 주제로 매년 9월 무주에서 개최되는 생태 환경 축제로, 반딧불이 감상 및 자연 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_37_4', contenttypeid:'15', area:'37', si:'4', title:'남원춘향제', addr1:'전북특별자치도 남원시 양림길 43 광한루원 일원', tel:'063-625-4898', overview:'고전 소설 춘향전의 배경지 남원에서 매년 5월 개최되는 전통 문화 축제로, 미스춘향 선발 대회와 전통 공연이 운영된다.', _pinned:true},
+  {contentid:'_fest_37_6', contenttypeid:'15', area:'37', si:'6', title:'부안마실축제', addr1:'전북특별자치도 부안군 부안읍 당산로 일원', tel:'063-580-4561', overview:'전북 부안에서 매년 4~5월 개최되는 봄 문화 축제로, 지역 특산물 체험과 공연·전시 행사가 어우러진 지역 대표 축제이다.', _pinned:true},
+  {contentid:'_fest_37_9', contenttypeid:'15', area:'37', si:'9', title:'익산서동축제', addr1:'전북특별자치도 익산시 금마면 미륵사지로 362 익산왕궁유적지 일원', tel:'063-859-3914', overview:'마한과 백제 문화 유산이 풍부한 익산에서 매년 10월 개최되는 역사 문화 축제로, 서동·선화공주의 사랑 이야기를 주제로 한다.', _pinned:true},
+  {contentid:'_fest_37_10', contenttypeid:'15', area:'37', si:'10', title:'임실N치즈축제', addr1:'전북특별자치도 임실군 임실읍 치즈마을길 16 임실치즈마을', tel:'063-643-3700', mapx:'127.2897', mapy:'35.6178', overview:'우리나라 치즈 발상지 임실에서 매년 10월 개최되는 치즈 테마 축제로, 치즈 만들기 체험과 피자 굽기, 목장 체험 등 다양한 프로그램이 운영된다. 1967년 지정환 신부가 처음 치즈를 만든 역사적인 고장에서 열리는 대표 농촌 체험 축제이다.', _pinned:true},
+  {contentid:'_fest_37_13', contenttypeid:'15', area:'37', si:'13', title:'정읍국화축제', addr1:'전북특별자치도 정읍시 내장산 내장호 일원', tel:'063-539-5220', overview:'내장산 단풍과 국화를 즐길 수 있는 정읍에서 매년 10~11월 개최되는 가을 축제로, 국화 전시와 단풍 산행이 운영된다.', _pinned:true},
+  {contentid:'_fest_38_20', contenttypeid:'15', area:'38', si:'20', title:'함평나비대축제', addr1:'전라남도 함평군 함평읍 나비대로 일원', tel:'061-322-7711', overview:'청정 생태 환경을 상징하는 나비를 주제로 매년 4~5월 함평에서 개최되는 봄 생태 축제로, 나비 체험관과 꽃 경관이 운영된다.', _pinned:true},
+  {contentid:'_fest_38_13', contenttypeid:'15', area:'38', si:'13', title:'여수거북선축제', addr1:'전라남도 여수시 군자동 여수항 일원', tel:'061-659-4640', overview:'이순신 장군과 거북선의 고장 여수에서 매년 5월 개최되는 해양 역사 문화 축제로, 거북선 재현과 해전 공연이 운영된다.', _pinned:true},
+  {contentid:'_fest_38_7', contenttypeid:'15', area:'38', si:'7', title:'담양대나무축제', addr1:'전라남도 담양군 담양읍 죽녹원로 119 죽녹원 일원', tel:'061-380-3114', overview:'대나무의 고장 담양에서 매년 5월 죽녹원 일원에서 개최되는 대나무 문화 축제로, 대나무 공예 체험과 가사문학 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_38_10', contenttypeid:'15', area:'38', si:'10', title:'보성다향대축제', addr1:'전라남도 보성군 보성읍 녹차로 일원', tel:'061-852-4434', overview:'한국 차(茶) 문화의 중심지 보성에서 매년 5월 개최되는 차 문화 축제로, 녹차밭 투어와 다도 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_38_11', contenttypeid:'15', area:'38', si:'11', title:'순천만갈대축제', addr1:'전라남도 순천시 순천만길 200 순천만 국가정원 일원', tel:'061-749-3114', overview:'유네스코 생물권 보전지역 순천만에서 매년 10~11월 개최되는 갈대 생태 축제로, 갈대 군락지 산책과 생태 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_38_1', contenttypeid:'15', area:'38', si:'1', title:'강진청자축제', addr1:'전라남도 강진군 대구면 청자촌길 33 고려청자도요지 일원', tel:'061-430-3178', overview:'고려청자의 발상지 강진에서 매년 7~8월 개최되는 청자 문화 축제로, 청자 제작 체험과 전통 도예 전시가 운영된다.', _pinned:true},
+  {contentid:'_fest_38_5', contenttypeid:'15', area:'38', si:'5', title:'구례산수유꽃축제', addr1:'전라남도 구례군 산동면 산수유로 일원', tel:'061-780-2380', overview:'지리산 자락 구례 산동면 산수유 꽃마을에서 매년 3월 봄꽃 개화 시기에 열리는 축제로, 노란 산수유꽃이 마을 전체를 물들인다.', _pinned:true},
+  {contentid:'_fest_38_19', contenttypeid:'15', area:'38', si:'19', title:'진도신비의바닷길축제', addr1:'전라남도 진도군 고군면 회동리 신비의바닷길 일원', tel:'061-540-3114', overview:'음력 2월 말~3월 초에 바다가 갈라지는 진도 신비의 바닷길에서 개최되는 해양 자연 축제로, 모세의 기적을 체험할 수 있다.', _pinned:true},
+  {contentid:'_fest_38_14', contenttypeid:'15', area:'38', si:'14', title:'영광모싯잎송편축제', addr1:'전라남도 영광군 영광읍 일원', tel:'061-350-5114', overview:'전통 모시잎 송편으로 유명한 영광에서 매년 9월 개최되는 전통 음식 문화 축제로, 모시잎 송편 만들기 체험이 운영된다.', _pinned:true},
+  {contentid:'_fest_38_15', contenttypeid:'15', area:'38', si:'15', title:'영암왕인문화축제', addr1:'전라남도 영암군 군서면 왕인로 440 왕인박사유적지 일원', tel:'061-470-2372', overview:'일본에 문화를 전파한 왕인 박사의 고향 영암에서 매년 4월 개최되는 역사 문화 축제이다.', _pinned:true},
+  {contentid:'_fest_38_4', contenttypeid:'15', area:'38', si:'4', title:'광양매화축제', addr1:'전라남도 광양시 다압면 섬진강매화로 일원', tel:'061-797-2662', overview:'섬진강변 광양 매화마을에서 매년 3월 매화 개화 시기에 열리는 봄꽃 축제로, 하얀 매화꽃이 가득한 마을 경관을 즐길 수 있다.', _pinned:true},
+  {contentid:'_fest_38_2', contenttypeid:'15', area:'38', si:'2', title:'고흥우주항공축제', addr1:'전라남도 고흥군 나로면 일원 나로우주센터', tel:'061-830-5114', overview:'나로우주센터가 있는 고흥에서 매년 10월 개최되는 우주 항공 체험 축제로, 로켓 발사 체험과 천문 관측 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_38_18', contenttypeid:'15', area:'38', si:'18', title:'장흥물축제', addr1:'전라남도 장흥군 장흥읍 탐진강변 일원', tel:'061-860-0262', overview:'청정 탐진강에서 매년 7~8월 개최되는 여름 물 축제로, 물놀이 체험과 수상 레저, 민물 낚시 행사가 운영된다.', _pinned:true},
+  {contentid:'_fest_38_6', contenttypeid:'15', area:'38', si:'6', title:'나주영산강문화축제', addr1:'전라남도 나주시 영산동 영산강 일원', tel:'061-339-7114', overview:'영산강 문화와 나주의 역사를 주제로 매년 10월 개최되는 지역 문화 축제로, 다양한 전통 체험과 공연이 운영된다.', _pinned:true},
+  {contentid:'_fest_39_1', contenttypeid:'15', area:'39', si:'1', title:'제주들불축제', addr1:'제주특별자치도 제주시 애월읍 봉성리 산59-8 새별오름', tel:'064-728-2751', overview:'제주 새별오름에서 매년 3월 개최되는 오름 들불 놓기 전통 문화 축제로, 밤하늘을 수놓는 불꽃쇼와 다양한 민속 공연이 펼쳐진다.', _pinned:true},
+  {contentid:'_fest_39_1b', contenttypeid:'15', area:'39', si:'1', title:'제주왕벚꽃축제', addr1:'제주특별자치도 제주시 전농로 일원', tel:'064-728-2751', overview:'왕벚나무의 자생지 제주 전농로에서 매년 4월 개최되는 봄꽃 축제로, 화사한 왕벚꽃 거리와 다양한 공연이 운영된다.', _pinned:true},
+  {contentid:'_fest_39_1c', contenttypeid:'15', area:'39', si:'1', title:'제주해녀축제', addr1:'제주특별자치도 제주시 구좌읍 해녀박물관길 26 해녀박물관 일원', tel:'064-728-3315', overview:'유네스코 인류무형문화유산 제주 해녀의 문화를 기리는 축제로, 매년 9월 구좌읍 해녀박물관 일원에서 개최된다.', _pinned:true},
+  {contentid:'_fest_39_2', contenttypeid:'15', area:'39', si:'2', title:'서귀포유채꽃축제', addr1:'제주특별자치도 서귀포시 표선면 가시리 녹산로 일원 (조랑말체험공원)', tel:'064-760-2514', overview:'제주 봄의 대표 경관인 유채꽃밭에서 매년 3~4월 개최되는 봄꽃 축제로, 유채꽃과 제주 조랑말이 어우러진 봄 풍경을 즐길 수 있다.', _pinned:true},
+  {contentid:'_fest_39_2b', contenttypeid:'15', area:'39', si:'2', title:'성산일출축제', addr1:'제주특별자치도 서귀포시 성산읍 일출로 284-12 성산일출봉 일원', tel:'064-730-4076', overview:'세계자연유산 성산일출봉에서 매년 1월 1일 개최되는 신년 해맞이 축제로, 제주 최고의 일출 명소에서 새해를 맞이하는 행사이다.', _pinned:true},
+  {contentid:'_fest_39_2c', contenttypeid:'15', area:'39', si:'2', title:'제주감귤박람회', addr1:'제주특별자치도 서귀포시 효돈순환로 441 서귀포 감귤박물관 일원', tel:'064-767-3010', overview:'제주 특산물 감귤을 주제로 매년 11월 서귀포 감귤박물관에서 개최되는 감귤 문화 박람회로, 감귤 따기 체험과 전시 행사가 운영된다.', _pinned:true}
+];
+
+function getPinned(area, si, type){
+  return PINNED.filter(p =>
+    p.area === area &&
+    (!si || p.si === si) &&
+    (!type || p.contenttypeid === type)
+  );
+}
+
+// ── TourAPI 호출 ──
+async function loadSpots(area, si, type, cityName){
+  const grid = document.getElementById('spot-grid');
+  document.getElementById('stat').textContent='';
+  grid.innerHTML = Array.from({length:8}).map(()=>`
+    <div class="sk-card">
+      <div class="sk-img skel"></div>
+      <div class="sk-body">
+        <div class="sk-line skel"></div>
+        <div class="sk-line w6 skel"></div>
+        <div class="sk-line w4 skel"></div>
+      </div>
+    </div>`).join('');
+
+  try{
+    let apiItems = [];
+    let totalCount = 0;
+
+    if(type === 'trail'){
+      // 둘레길: contentTypeId=25 + 핵심 키워드 2개 — 병렬 호출로 속도 개선
+      const results = new Map();
+      const addItems = arr => arr.forEach(x => { if(x?.contentid) results.set(x.contentid, x); });
+      const safeItems = d => { const r = d?.response?.body?.items?.item ?? []; return Array.isArray(r) ? r : (r ? [r] : []); };
+      const baseQ = '&numOfRows=1000&pageNo=1&MobileOS=ETC&MobileApp=TourRo&_type=json';
+
+      const fetches = [
+        // ① 여행코스(25) — 공식 등록 코스
+        apiFetch(BASE+'/areaBasedList2?serviceKey='+getApiKey()+baseQ+'&areaCode='+area+'&contentTypeId=25')
+          .then(t=>addItems(safeItems(JSON.parse(t)))).catch(()=>{}),
+        // ② 둘레길 키워드
+        apiFetch(BASE+'/searchKeyword2?serviceKey='+getApiKey()+baseQ+'&keyword='+encodeURIComponent('둘레길')+'&areaCode='+area)
+          .then(t=>addItems(safeItems(JSON.parse(t)))).catch(()=>{}),
+        // ③ 트레킹 키워드
+        apiFetch(BASE+'/searchKeyword2?serviceKey='+getApiKey()+baseQ+'&keyword='+encodeURIComponent('트레킹')+'&areaCode='+area)
+          .then(t=>addItems(safeItems(JSON.parse(t)))).catch(()=>{}),
+      ];
+      await Promise.all(fetches);
+
+      const all = [...results.values()];
+      if(si){
+        const getSi = x => { const v = x.sigungucode??x.sigunguCode; return v!=null ? String(v) : ''; };
+        const byCode = all.filter(x => getSi(x) === String(si));
+        const byName = cityName ? all.filter(x => (x.addr1||'').includes(cityName)) : [];
+        const merged = [...byCode];
+        const ids = new Set(byCode.map(x=>x.contentid));
+        byName.forEach(x => { if(!ids.has(x.contentid)) merged.push(x); });
+        apiItems = merged;
+      } else {
+        apiItems = all;
+      }
+      totalCount = apiItems.length;
+    } else if(type === '15'){
+      // 축제/행사: 전국 통일 — areaBasedList2+contentTypeId=15 도 전체 조회 후 클라이언트 필터
+      let u = BASE+'/areaBasedList2?serviceKey='+getApiKey()
+        +'&numOfRows=1000&pageNo=1&MobileOS=ETC&MobileApp=TourRo&_type=json'
+        +'&areaCode='+area+'&contentTypeId=15';
+      const ft = await apiFetch(u);
+      const fd = JSON.parse(ft);
+      const r  = fd?.response?.body?.items?.item ?? [];
+      const all = Array.isArray(r) ? r : (r ? [r] : []);
+      if(si){
+        const getSi = x => { const v = x.sigungucode??x.sigunguCode; return v!=null ? String(v) : ''; };
+        const byCode = all.filter(x => getSi(x) === String(si));
+        const byName = cityName ? all.filter(x => (x.addr1||'').includes(cityName)) : [];
+        const merged = [...byCode];
+        const ids = new Set(byCode.map(x=>x.contentid));
+        byName.forEach(x => { if(!ids.has(x.contentid)) merged.push(x); });
+        apiItems = merged;
+      } else {
+        apiItems = all;
+      }
+      totalCount = apiItems.length;
+    } else {
+      // sigunguCode API 파라미터가 일부 지역/카테고리 조합에서 빈 결과를 낼 수 있어
+      // 도 전체 조회 후 클라이언트에서 sigungucode 필터링
+      let u = BASE+'/areaBasedList2?serviceKey='+getApiKey()
+        +'&numOfRows=1000&pageNo=1&MobileOS=ETC&MobileApp=TourRo&_type=json'
+        +'&areaCode='+area;
+      if(type) u += '&contentTypeId='+type;
+      const text = await apiFetch(u);
+      const data  = JSON.parse(text);
+      const body  = data?.response?.body;
+      const raw   = body?.items?.item ?? [];
+      const all   = Array.isArray(raw) ? raw : (raw ? [raw] : []);
+      if(si){
+        // 1차: sigungucode 매칭, 2차: addr1에 시 이름 포함 여부
+        const byCode = all.filter(x => String(x.sigungucode||x.sigunguCode||'') === String(si));
+        const byName = cityName ? all.filter(x => (x.addr1||'').includes(cityName)) : [];
+        // 둘을 합쳐서 중복 제거
+        const merged = [...byCode];
+        const ids = new Set(byCode.map(x=>x.contentid));
+        byName.forEach(x => { if(!ids.has(x.contentid)) merged.push(x); });
+        apiItems = merged;
+      } else {
+        apiItems = all;
+      }
+      totalCount = apiItems.length;
+    }
+
+    const pinned = getPinned(area, si, type);
+    const items = [...pinned, ...apiItems];
+    const total = totalCount + pinned.length;
+
+    document.getElementById('stat').textContent = total>0 ? '총 '+total.toLocaleString()+'개 장소':'' ;
+
+    if(!items.length || !items[0]?.contentid){
+      grid.innerHTML=`<div class="empty">
+        <div class="empty-ico"><i data-lucide="search-x" style="width:36px;height:36px;"></i></div>
+        <p>등록된 장소가 없어요</p><small>다른 카테고리를 선택해 보세요</small>
+      </div>`; lucide.createIcons(); return;
+    }
+
+    grid.innerHTML = items.map(s=>{
+      const info = (curTab==='trail' ? TYPE['trail'] : null) ?? TYPE[s.contenttypeid] ?? TYPE['12'];
+      return `
+        <div class="spot-card" onclick="openDetail('${s.contentid}','${s.contenttypeid}')">
+          <div class="simg">
+            ${s.firstimage
+              ?`<img src="${s.firstimage}" alt="${s.title}" loading="lazy" onerror="this.style.display='none'">`
+              :`<i data-lucide="image-off" style="width:26px;height:26px;opacity:.3;"></i>`}
+            <span class="sbadge ${info.cls}">${info.label}</span>
+          </div>
+          <div class="sbody">
+            <div class="stitle">${s.title}</div>
+            ${s.addr1?`<div class="smeta"><i data-lucide="map-pin" style="width:10px;height:10px;flex-shrink:0;"></i>${s.addr1}</div>`:''}
+            ${s.tel?`<div class="smeta"><i data-lucide="phone" style="width:10px;height:10px;flex-shrink:0;"></i>${s.tel}</div>`:''}
+          </div>
+        </div>`;
+    }).join('');
+    lucide.createIcons();
+
+  } catch(e){
+    console.error(e);
+    grid.innerHTML=`<div class="empty">
+      <div class="empty-ico"><i data-lucide="wifi-off" style="width:36px;height:36px;"></i></div>
+      <p>데이터를 불러오지 못했어요</p>
+      <small>${e.message||'API 키와 인터넷 연결을 확인해 주세요'}</small>
+    </div>`; lucide.createIcons();
+  }
+}
+
+// ── 장소 상세 ──
+async function openDetail(cid, ctype){
+  // pinned 항목은 별도 처리
+  if(String(cid).startsWith('_')){
+    const p = PINNED.find(x=>x.contentid===cid);
+    if(!p) return;
+    showPage('detail');
+    const wrap = document.getElementById('det-ct');
+    const mapUrl = p.mapx&&p.mapy
+      ?'https://map.kakao.com/link/map/'+encodeURIComponent(p.title)+','+p.mapy+','+p.mapx
+      :'https://map.kakao.com/link/search/'+encodeURIComponent(p.addr1||p.title);
+    wrap.innerHTML=`
+      ${p.firstimage?`<img class="det-hero" src="${p.firstimage}" alt="${p.title}">`:''}
+      <h1 class="det-title">${p.title}</h1>
+      <div class="det-meta-row">
+        ${p.addr1?`<span class="det-meta"><i data-lucide="map-pin" style="width:12px;height:12px;color:var(--muted);"></i>${p.addr1}</span>`:''}
+        ${p.tel?`<span class="det-meta"><i data-lucide="phone" style="width:12px;height:12px;color:var(--muted);"></i>${p.tel}</span>`:''}
+      </div>
+      ${p.overview?`<div class="det-card"><h3><i data-lucide="align-left" style="width:10px;height:10px;"></i> 소개</h3><p class="det-ov">${p.overview}</p></div>`:''}
+      <div class="det-card">
+        <h3><i data-lucide="navigation" style="width:10px;height:10px;"></i> 위치</h3>
+        <a href="${mapUrl}" target="_blank" rel="noopener" class="kakao-btn">
+          <i data-lucide="map" style="width:12px;height:12px;"></i> 카카오맵에서 보기
+        </a>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+  showPage('detail');
+  const wrap = document.getElementById('det-ct');
+  wrap.innerHTML=`<div style="text-align:center;padding:80px 0;color:var(--muted);">
+    <i data-lucide="loader-circle" style="width:26px;height:26px;animation:spin 1s linear infinite;"></i>
+  </div>`; lucide.createIcons();
+
+  try{
+    const url = BASE+'/detailCommon2?serviceKey='+getApiKey()
+      +'&MobileOS=ETC&MobileApp=TourRo&_type=json'
+      +'&contentId='+cid
+      +'&numOfRows=1&pageNo=1';
+
+    const text = await apiFetch(url);
+
+    const data = JSON.parse(text);
+    const body = data?.response?.body;
+    const s    = body?.items?.item?.[0];
+    if(!s) throw new Error('no data (totalCount='+body?.totalCount+', contentId='+cid+')');
+
+    const mapUrl = s.mapx&&s.mapy
+      ?'https://map.kakao.com/link/map/'+encodeURIComponent(s.title)+','+s.mapy+','+s.mapx
+      :null;
+
+    wrap.innerHTML=`
+      ${s.firstimage?`<img class="det-hero" src="${s.firstimage}" alt="${s.title}">` :''}
+      <h1 class="det-title">${s.title}</h1>
+      <div class="det-meta-row">
+        ${s.addr1?`<span class="det-meta"><i data-lucide="map-pin" style="width:12px;height:12px;color:var(--muted);"></i>${s.addr1}</span>`:''}
+        ${s.tel?`<span class="det-meta"><i data-lucide="phone" style="width:12px;height:12px;color:var(--muted);"></i>${s.tel}</span>`:''}
+      </div>
+      ${s.overview?`<div class="det-card">
+        <h3><i data-lucide="align-left" style="width:10px;height:10px;"></i> 소개</h3>
+        <p class="det-ov">${s.overview.replace(/<[^>]*>/g,'')}</p>
+      </div>`:''}
+      ${mapUrl?`<div class="det-card">
+        <h3><i data-lucide="navigation" style="width:10px;height:10px;"></i> 위치</h3>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:4px;">${s.mapy}, ${s.mapx}</p>
+        <a href="${mapUrl}" target="_blank" class="kakao-btn">
+          <i data-lucide="map" style="width:12px;height:12px;"></i> 카카오맵에서 보기
+        </a>
+      </div>`:''}`;
+    lucide.createIcons();
+  } catch(e){
+    console.error('[TourRo] openDetail error:', e);
+    wrap.innerHTML=`<div class="empty">
+      <div class="empty-ico"><i data-lucide="circle-x" style="width:36px;height:36px;"></i></div>
+      <p>정보를 불러올 수 없어요</p>
+      <small>${e.message||''}</small>
+    </div>`; lucide.createIcons();
+  }
+}
+
+// 초기화
+renderSido();
+checkKeyBanner();
+lucide.createIcons();
+</script>
+</body>
+</html>
