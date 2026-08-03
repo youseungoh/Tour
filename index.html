@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -285,6 +286,30 @@ const BASE = 'https://apis.data.go.kr/B551011/KorService2';
 function getApiKey(){ return API_KEY; }
 function checkKeyBanner(){}
 
+// API 진단: 어느 채널/서비스가 작동하는지 순차 테스트
+async function diagApi(){
+  const testUrl = BASE + '/areaBasedList2?serviceKey='+getApiKey()
+    + '&numOfRows=1&pageNo=1&MobileOS=ETC&MobileApp=TourRo&_type=json&areaCode=1';
+  const chans = _channels(testUrl);
+  const labels = ['직접(v2)', 'corsproxy(v2)', 'allorigins(v2)', '직접(v1)', 'corsproxy(v1)'];
+  const results = [];
+  for(let i=0; i<chans.length; i++){
+    try{
+      const t = await _try(chans[i], 5000);
+      const d = JSON.parse(t);
+      const hdr = d?.response?.header;
+      const code = hdr?.resultCode ?? '?';
+      const msg = hdr?.resultMsg ?? '?';
+      const total = d?.response?.body?.totalCount ?? '?';
+      results.push('✅ '+labels[i]+' → code='+code+' msg='+msg+' total='+total);
+    } catch(e){
+      results.push('❌ '+labels[i]+' → '+(e.message||e));
+    }
+  }
+  alert('API 진단 결과:\n\n' + results.join('\n\n'));
+}
+window.diagApi = diagApi;
+
 // 세션 캐시 (같은 요청 재사용) + 최적 채널 학습
 const _apiCache = new Map();
 let _bestChannel = null;  // 최근에 성공한 채널 index를 기억
@@ -305,33 +330,58 @@ function _channels(url){
   ];
 }
 
-async function _try(tu){
-  const r = await fetch(tu);
-  const t = await r.text();
-  if(!t || !t.trim()) throw new Error('빈 응답');
-  if(t.trim().startsWith('<')){
-    const m = t.match(/<errMsg>(.*?)<\/errMsg>/);
-    throw new Error(m ? m[1] : 'HTML 응답');
+async function _try(tu, timeoutMs=3000){
+  const ctrl = new AbortController();
+  const to = setTimeout(()=>ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(tu, {signal: ctrl.signal});
+    const t = await r.text();
+    if(!t || !t.trim()) throw new Error('빈 응답');
+    if(t.trim().startsWith('<')){
+      const m = t.match(/<errMsg>(.*?)<\/errMsg>/);
+      throw new Error(m ? m[1] : 'HTML 응답');
+    }
+    const d = JSON.parse(t);
+    if(!d?.response?.header && !d?.response?.body) throw new Error('TourAPI 응답 아님');
+    return t;
+  } finally {
+    clearTimeout(to);
   }
-  const d = JSON.parse(t);
-  if(!d?.response?.header && !d?.response?.body) throw new Error('TourAPI 응답 아님');
-  return t;
+}
+
+// localStorage 24시간 캐시
+function _lsGet(url){
+  try {
+    const raw = localStorage.getItem('tourro:' + url);
+    if(!raw) return null;
+    const {ts, text} = JSON.parse(raw);
+    if(Date.now() - ts > 24*60*60*1000) return null;
+    return text;
+  } catch(e){ return null; }
+}
+function _lsSet(url, text){
+  try { localStorage.setItem('tourro:' + url, JSON.stringify({ts: Date.now(), text})); } catch(e){}
 }
 
 async function apiFetch(url){
+  // 세션 캐시
   if(_apiCache.has(url)) return _apiCache.get(url);
+  // localStorage 24h 캐시
+  const cached = _lsGet(url);
+  if(cached){ _apiCache.set(url, cached); return cached; }
+
   const chans = _channels(url);
   let text = null;
 
   // 1단계: 학습된 최적 채널이 있으면 먼저 단독 시도 (매우 빠름)
   if(_bestChannel != null && chans[_bestChannel]){
-    try { text = await _try(chans[_bestChannel]); }
+    try { text = await _try(chans[_bestChannel], 2500); }
     catch(e){ _bestChannel = null; }
   }
 
-  // 2단계: Promise.any로 모든 채널 병렬 경쟁 — 가장 빠른 성공 채택
+  // 2단계: Promise.any로 모든 채널 병렬 경쟁 — 5초 타임아웃, 가장 빠른 성공 채택
   if(!text){
-    const attempts = chans.map((c,i) => _try(c).then(t => ({t, i})));
+    const attempts = chans.map((c,i) => _try(c, 3000).then(t => ({t, i})));
     try {
       const winner = await Promise.any(attempts);
       _bestChannel = winner.i;
@@ -343,6 +393,7 @@ async function apiFetch(url){
   }
 
   _apiCache.set(url, text);
+  _lsSet(url, text);
   const data = JSON.parse(text);
   const hdr = data?.response?.header;
   if(hdr?.resultCode && hdr.resultCode !== '0000'){
@@ -685,21 +736,30 @@ function renderSido(){
     </div>`).join('');
 }
 
-// ── 시도 열기 ──
+// ── 시도 열기 ── (기본값: 첫 시군구 + 관광지 탭)
 function openSido(sid){
   curSido = SIDOS.find(s=>s.id===sid);
-  curCity = null; curTab = '';
+  // 해당 시도의 첫 번째 시군구를 자동 선택 (로딩 속도 및 UX 개선)
+  const firstCity = CITIES.find(c=>c.area===curSido.area);
+  curCity = firstCity || null;
+  curTab = '12';  // 기본 탭: 관광지
 
-  document.getElementById('rh-img').src    = curSido.img;
-  document.getElementById('rh-img').alt    = curSido.name;
+  const headerImg = curCity ? (curCity.img || curSido.img) : curSido.img;
+  const headerName = curCity ? (curCity.name + ' · ' + curSido.name) : curSido.name;
+  document.getElementById('rh-img').src    = headerImg;
+  document.getElementById('rh-img').alt    = headerName;
   document.getElementById('rh-emoji').textContent = curSido.emoji;
-  document.getElementById('rh-name').textContent  = curSido.name;
-  document.getElementById('rh-desc').textContent  = curSido.desc;
+  document.getElementById('rh-name').textContent  = headerName;
+  document.getElementById('rh-desc').textContent  = curSido.desc || '';
 
   renderCityBar();
   renderTabs();
   showPage('region');
-  loadSpots(curSido.area, '', '', '');
+  if(curCity){
+    loadSpots(curCity.area, curCity.si, curTab, curCity.name);
+  } else {
+    loadSpots(curSido.area, '', curTab, '');
+  }
 }
 
 // ── 검색으로 시군구 직접 열기 ──
@@ -1220,19 +1280,70 @@ function getPinned(area, si, type){
   );
 }
 
+// 시군구+카테고리 PINNED가 부족할 때 시도 전체의 같은 카테고리 PINNED로 확장
+function getPinnedFallback(area, si, type){
+  const exact = getPinned(area, si, type);
+  if(exact.length >= 3) return exact;
+  // 시도 전체 (같은 category) 도 함께 보여줌 (중복 제거)
+  const wide = PINNED.filter(p => p.area === area && (!type || p.contenttypeid === type));
+  const ids = new Set(exact.map(x=>x.contentid));
+  const rest = wide.filter(x => !ids.has(x.contentid));
+  return [...exact, ...rest];
+}
+
 // ── TourAPI 호출 ──
+let _loadReqId = 0;
+
+function _renderCards(items){
+  const grid = document.getElementById('spot-grid');
+  if(!items.length){
+    grid.innerHTML=`<div class="empty">
+      <div class="empty-ico"><i data-lucide="search-x" style="width:36px;height:36px;"></i></div>
+      <p>등록된 장소가 없어요</p><small>다른 카테고리를 선택해 보세요</small>
+    </div>`; lucide.createIcons(); return;
+  }
+  grid.innerHTML = items.map(s=>{
+    const info = (curTab==='trail' ? TYPE['trail'] : null) ?? TYPE[s.contenttypeid] ?? TYPE['12'];
+    return `
+      <div class="spot-card" onclick="openDetail('${s.contentid}','${s.contenttypeid}')">
+        <div class="simg">
+          ${s.firstimage
+            ?`<img src="${s.firstimage}" alt="${s.title}" loading="lazy" onerror="this.style.display='none'">`
+            :`<i data-lucide="image-off" style="width:26px;height:26px;opacity:.3;"></i>`}
+          <span class="sbadge ${info.cls}">${info.label}</span>
+        </div>
+        <div class="sbody">
+          <div class="stitle">${s.title}</div>
+          ${s.addr1?`<div class="smeta"><i data-lucide="map-pin" style="width:10px;height:10px;flex-shrink:0;"></i>${s.addr1}</div>`:''}
+          ${s.tel?`<div class="smeta"><i data-lucide="phone" style="width:10px;height:10px;flex-shrink:0;"></i>${s.tel}</div>`:''}
+        </div>
+      </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
 async function loadSpots(area, si, type, cityName){
+  const myReq = ++_loadReqId;
   const grid = document.getElementById('spot-grid');
   document.getElementById('stat').textContent='';
-  grid.innerHTML = Array.from({length:8}).map(()=>`
-    <div class="sk-card">
-      <div class="sk-img skel"></div>
-      <div class="sk-body">
-        <div class="sk-line skel"></div>
-        <div class="sk-line w6 skel"></div>
-        <div class="sk-line w4 skel"></div>
-      </div>
-    </div>`).join('');
+
+  // ① PINNED 데이터를 즉시 렌더 (API 대기 없음)
+  // 해당 시군구에 데이터가 부족하면 시도 전체로 확장하여 최소한 무언가 보이게 함
+  const pinned = getPinnedFallback(area, si, type);
+  if(pinned.length){
+    _renderCards(pinned);
+    document.getElementById('stat').textContent = '총 '+pinned.length+'개 (추가 로딩중...)';
+  } else {
+    grid.innerHTML = Array.from({length:8}).map(()=>`
+      <div class="sk-card">
+        <div class="sk-img skel"></div>
+        <div class="sk-body">
+          <div class="sk-line skel"></div>
+          <div class="sk-line w6 skel"></div>
+          <div class="sk-line w4 skel"></div>
+        </div>
+      </div>`).join('');
+  }
 
   try{
     let apiItems = [];
@@ -1319,45 +1430,27 @@ async function loadSpots(area, si, type, cityName){
       totalCount = apiItems.length;
     }
 
-    const pinned = getPinned(area, si, type);
+    // 오래된 요청은 무시 (사용자가 이미 다른 탭 클릭한 경우)
+    if(myReq !== _loadReqId) return;
+
     const items = [...pinned, ...apiItems];
     const total = totalCount + pinned.length;
-
     document.getElementById('stat').textContent = total>0 ? '총 '+total.toLocaleString()+'개 장소':'' ;
-
-    if(!items.length || !items[0]?.contentid){
-      grid.innerHTML=`<div class="empty">
-        <div class="empty-ico"><i data-lucide="search-x" style="width:36px;height:36px;"></i></div>
-        <p>등록된 장소가 없어요</p><small>다른 카테고리를 선택해 보세요</small>
-      </div>`; lucide.createIcons(); return;
-    }
-
-    grid.innerHTML = items.map(s=>{
-      const info = (curTab==='trail' ? TYPE['trail'] : null) ?? TYPE[s.contenttypeid] ?? TYPE['12'];
-      return `
-        <div class="spot-card" onclick="openDetail('${s.contentid}','${s.contenttypeid}')">
-          <div class="simg">
-            ${s.firstimage
-              ?`<img src="${s.firstimage}" alt="${s.title}" loading="lazy" onerror="this.style.display='none'">`
-              :`<i data-lucide="image-off" style="width:26px;height:26px;opacity:.3;"></i>`}
-            <span class="sbadge ${info.cls}">${info.label}</span>
-          </div>
-          <div class="sbody">
-            <div class="stitle">${s.title}</div>
-            ${s.addr1?`<div class="smeta"><i data-lucide="map-pin" style="width:10px;height:10px;flex-shrink:0;"></i>${s.addr1}</div>`:''}
-            ${s.tel?`<div class="smeta"><i data-lucide="phone" style="width:10px;height:10px;flex-shrink:0;"></i>${s.tel}</div>`:''}
-          </div>
-        </div>`;
-    }).join('');
-    lucide.createIcons();
+    _renderCards(items);
 
   } catch(e){
     console.error(e);
-    grid.innerHTML=`<div class="empty">
-      <div class="empty-ico"><i data-lucide="wifi-off" style="width:36px;height:36px;"></i></div>
-      <p>데이터를 불러오지 못했어요</p>
-      <small>${e.message||'API 키와 인터넷 연결을 확인해 주세요'}</small>
-    </div>`; lucide.createIcons();
+    if(myReq !== _loadReqId) return;
+    // PINNED이 이미 있으면 그대로 유지, 없을 때만 오류 표시
+    if(!pinned.length){
+      grid.innerHTML=`<div class="empty">
+        <div class="empty-ico"><i data-lucide="wifi-off" style="width:36px;height:36px;"></i></div>
+        <p>데이터를 불러오지 못했어요</p>
+        <small>${e.message||'API 키와 인터넷 연결을 확인해 주세요'}</small>
+      </div>`; lucide.createIcons();
+    } else {
+      document.getElementById('stat').textContent = '총 '+pinned.length+'개 (API 로드 실패)';
+    }
   }
 }
 
